@@ -1,3 +1,5 @@
+The main article of this project is [ConflictSerializability.html](https://github.com/creamyfish/conflict_serializability/blob/main/ConflictSerializability.html).
+
 This work represents an on-going project that's lasted more than a decade to solve the conflict serializability problem completely, especially in 
 a distributed database system. Some applications like financial ones require serializability in an OLTP system since they don't tolerate inconsistency. 
 I've recently performed a thorough survey in commercial database systems and found out that there are four serializability implementations: 
