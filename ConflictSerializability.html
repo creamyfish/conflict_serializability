@@ -4507,6 +4507,10 @@ highly appreciated.
 	</div>
 	
 	<p>
+	  Remark: A helper program to generate the tables in this example is available <a href="https://github.com/creamyfish/conflict_parser" target="_blank">here</a>
+	</p>
+	
+	<p>
       There is one issue though in the way we prevent the predicate-based RW conflicts in MySQL Cluster: we introduce new tables and possible access to them. Does this cause extra conflicts and require more prevention measures? It does introduce new conflicts. For example, inserting and deleting a row in such a table give rise to a WW conflict. It turns out it doesn't require more prevention measures. We will give a proof after we introduce the Ramification Theorem in the next section.
     </p>
 	
