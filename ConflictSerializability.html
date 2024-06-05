@@ -138,7 +138,7 @@ tr:nth-child(even) {
 	    <a href="#section3.5">3.5 Joins, sub-queries and unions</a>
 	  </dt>
 	  <dt>
-	    <a href="#section3.6">3.6 Durability of consistency:TODO</a>
+	    <a href="#section3.6">3.6 Durability of consistency</a>
 	  </dt>
 	</dl>
   </dd>
@@ -6786,7 +6786,131 @@ highly appreciated.
   <div id="section3.6">
     <h3>3.6 Durability of consistency</h3>
 	
-	<h3>TODO</h3>
+	<p>
+	  So all of these deal with the consistency problem in MySQL Cluster. This means an application with all the necessary protection and prevention measures will leave a database consistent if it started so and the application finishes successfully. What if the system fails when the application is running? Will it leave the database in a consistent state? How about replications? Do they leave the slave in a consistent state in a traditional replication setting? What about in a more advanced active-active setting? What if a network partition strikes and results in a split-brain situation? We'll answer these questions next.
+    </p>
+
+    <p>
+      We first consider the situation when a MySQL Cluster suffers a system-wide failure and we call the answer to the question 'whether it will have a consistent state after the cluster is recovered from such a catastrophe' durability of consistency. To do that, we need to recap a key concept called 'epoch' in MySQL Cluster first.
+    </p>
+	
+	<p>
+      Every 100 milliseconds or so, a node in the cluster currently 'elected' as DIH Master initiates a two-phase protocol called Global Checkpoint and sends a GCP_PREPARE_REQ signal to all nodes including itself. On receiving a GCP_PREPARE_REQ signal, the node immediately blocks any prepared transactions from 'beginning to commit'. This causes the Transaction Coordinator (TC) blocks in each node to queue transactions which request commit. Already committing transactions can continue to commit, transactions can continue to be prepared and aborted. Once commit is blocked, the node immediately sends a GCP_PREPARE_CONF back to the DIH Master.
+    </p>
+
+    <p>
+      When all GCP_PREPARE_CONF signals have been received, the DIH Master immediately sends a GCP_COMMIT signal to all nodes, which unblocks COMMIT request processing and increments the Global Checkpoint Index (Number) (GCI) associated with every transaction which commits after this point. After unblocking Commit initiation, GCP_COMMIT processing then waits until all of the transactions with the previous GCI have completed, before sending GCP_NODEFINISH back to the DIH Master. Once all GCP_NODEFINISH are received, the DIH Master considers the GCP round complete.
+    </p>
+	
+	<p>
+      The logical time between two consecutive increments of GCI is called an 'epoch' and the commit of a transaction is associated with an 'epoch' uniquely.
+    </p>
+	
+	<p>
+	  MySQL Cluster uses neighborhood Write Ahead Logging or nWAL to provide high availability in case of node failure. Namely, a write is written to all replicas in a node group before it is published to an API node, like a mysqld server, as committed. And before a tuple is written, an entry is written in the REDO log to record this write event. The REDO log at each node is flushed to disk every second. In this case a node fails, the NDB kernel just use the rest of the node group to continue providing service since everything there is the same as in the failed one. In the case the whole node group or the whole system fails, the REDO log is used to restore the system to a consistent state. The question is: is the term 'consistent' used by MySQL Cluster here means the same thing as consistency in this article would have implied?
+	</p>
+	
+	<p>
+      So we examine the conditions in type B of the Serializability Theorem and easily find out every other condition is satisfied except maybe Condition <a href="#condition2'">2'</a>.
+    </p>
+	
+	<p>
+      Condition <a href="#condition2'">2'</a> requires the write event of a version exists if a read event of it does and precedes it. In the case of a system-wide recovery, the local REDO log in each node is used to recover itself to less than one second before the failure. If this recovery is NOT to an 'epoch' boundary, there is a chance that the aforementioned requirement might fail.
+    </p>
+	
+	<p>
+      For example, let n1, n2 be two data nodes in the cluster. N1 coordinates transaction T1 and n2 coordinates T2. Say T1 updates a tuple on n1 which is later read by T2 and this reading results in T2's own update. Assuming both T1 and T2 commit and their modifications are recorded in the local REDO logs on n1 and n2 respectively(for instance, T1 and T2 only modify data on their own coordinator). If a system crash strikes after T2's log is flushed, but before T1's is, then in the recovery afterwards results in T1's update is NOT reflected in the database while T2's is. This is actually a violation of Condition <a href="#condition2'">2'</a> since although T2's read is not recorded in the REDO log, it's implied by its update. Inconsistency could arise from this in general. For example, in the case the tuple read by T2 consists of pay grade info of an employee and that info is used by T2 to update the employee's salary, and the consistency is that any employee's salary must be correlated to his/her pay grade, then the failure to log T1's modification could result in a violation of this consistency. This example also provides better understanding of Condition <a href="#condition2'">2'</a>: it doesn't just require a write to be present and 'happened before' its read, this relationship must also be captured by the database.
+    </p>
+	
+	<p>
+      If this recovery is up to an 'epoch' boundary, in other words, the REDO log is played to the largest 'epoch' that survives the crash(the largest 'epoch' that is persisted to disk in the REDO log for every node), we can prove Condition <a href="#condition2'">2'</a> still holds and type B of the Serializability Theorem applies.
+    </p>
+	
+	<p>
+      We start by proving the following fact: if an update is recorded in a later 'epoch', it can't be read by a transaction committed in the current or an earlier 'epoch'. We prove it by contradiction. Suppose such a read could happen in the current or an earlier 'epoch'. Then this read event 'happened before' the commit of its transaction, which 'happened before' the commit of the updating transaction by the description of the 'epoch' mechanism since it commits in a later 'epoch'. On the other hand, we are in the Read-Committed isolation level of MySQL Cluster, so the commit event of the updating transaction 'happened before' the read. This contradiction proves what we have proposed and leads to the following conclusion: a read only reads updates from the current or an earlier 'epoch'. And since the recovery is up to an 'epoch' boundary, everything before that boundary has been recovered, including any update read by a transaction.
+    </p>
+	
+	<p>
+	  According to an article by Frazer Clement which is available <a href="https://messagepassing.blogspot.com/2011/12/eventual-consistency-in-mysql-cluster.html" target="_blank">here</a>, “epoch boundaries act as markers in the flow of row events generated by each node, which are then used as consistent points to recover to”. This means every node in the system is recovered to the same 'epoch' boundary in a system-wide recovery. Hence the recovered database state is consistent by type B of the Serializability Theorem.
+	</p>
+	
+	<p>
+	  For traditional replication where system-wide changes are replicated to a slave using a binlog, the slave always maintains a consistent state by type B of the Serializability Theorem. The reason is that all the changes in an 'epoch' in all the data nodes in the system is grouped into an 'epoch' transaction, which contains all the writes by transactions in this 'epoch', before it's replicated to the slave according to Frazer Clement's article. From the arguments of the last few paragraphs, this guarantees consistency if the replication runs to its end.
+	</p>
+	
+	<p>
+	  Now what happens if the replication process fails in the middle? If only the replica or the replication channel fails, there are relevant solutions in the MySQL documentation and I won't elaborate on those. We only consider the situation where the source cluster also suffers a system-wide failure here. In that case, from the discussion about durability of consistency, we know that we can always recover the source to a consistent state. After syncing that state to the replica, we may resume replication.
+	</p>
+	
+	<p>
+      In an advanced active-active setting where all clusters in the system are able to handle write loads, conflicts are resolved using mechanisms described in a series of articles by Frazer Clement, which are available <a href="https://messagepassing.blogspot.com/2011/10/eventual-consistency-with-mysql.html" target="_blank">here</a>. Conflicts come into two flavors in this context: tuple-based and transaction-based. Tuple-based conflicts arise when the primary and secondary cluster modify the same tuple concurrently. When a cluster replicates the update to its peer, it could result in a different order in either of them. The resolution is to rollback the modification from the secondary cluster and let the one from the primary prevail. But if there are other updates in the transaction encapsulating the update from the secondary, this resolution mechanism could lead to a situation where only part of the transaction is aborted since not every update in it results in a conflict. This abnormally is called 'data-shearing' in Frazer Clement's series and hence transaction-based conflict is introduced to take care of it. Transaction-based conflict can be defined with the following quote from Frazer Clement's article available <a href="https://messagepassing.blogspot.com/2011/10/eventual-consistency-with-transactions.html" target="_blank">here</a>:
+    </p>
+	
+	<p>
+	  “Where a row is found to be in-conflict with some replicated row operation, a further replicated row operation on the same row should also be found to be in-conflict, until the conflict condition has been cleared. This property is implicitly implemented in the existing row based conflict detection functions.
+	</p>
+	
+	<p>
+	  When the scope of a conflict is extended to include all row modifications in a transaction, this implies that all following replicated row operations which affect the same rows, must also be in conflict by implication. To avoid row shearing, these implied-in-conflict rows must implicate the other rows in their transactions, and those rows may in-turn implicate other rows. The overall effect is that a single row conflict must cause its transaction, and all dependent transactions to be considered to be in conflict.”
+	</p>
+	
+	<p>
+      This means if a transaction on the secondary cluster is in-conflict, all transactions in the same 'epoch' with WW conflicts with it are considered to be in-conflict. And recursively every transaction in that 'epoch' is examined to see if they are in-conflict with the previous found ones until the set of found ones doesn't expand any more. This set of transactions are then rolled back and the conflict resolution process moves onto the next 'epoch'.
+    </p>
+
+    <p>
+      Notice that this scheme doesn't suffer the same problem as in the durability of consistency case. For example, in the secondary cluster, if again we assume that T1 updates the database in 'epoch' e, T2 read this update and perform its own update in 'epoch' e+1; simultaneously, T1's update causes a conflict with the primary cluster and T1 is rolled back. Then again the database is in an inconsistent state since that update is gone, but its effect(the read and update in T2) is still there and Condition 2' is violated. This, however, only leaves the secondary cluster's state inconsistent transiently because the conflict resolution process will discover that and roll back T2 shortly when it deals with 'epoch' e+1. So the secondary cluster will be eventually consistent with the primary.
+    </p>
+	
+	<p>
+      In the case the primary cluster suffers a system-wide failure, the secondary will assume its role. In the unlikely case where the secondary cluster also suffers a system-wide failure afterwards, it is subject to the same situation as in durability of consistency.
+    </p>
+	
+	<p>
+      When a split-brain situation occurs, there is at most one subset of surviving nodes in MySQL Cluster that is going to continue to provide service. The criteria for choosing this surviving subset is:
+    </p>
+	
+	<ol>
+	  <li>
+	    It must contain at least one node from each and every node group.
+      </li>
+	  <li>
+	    It must also contain a pre-selected node called the arbitrator. In other words, only the subset including the arbitrator qualifies. 
+      </li>
+	</ol>
+	
+	<p>
+      Remark: If the network topology is special enough so that the arbitrator can be connected to more than one isolated subset, the arbitrator only responds 'yes' to the first subset that queries it. So the uniqueness of the surviving subset is well-defined.
+    </p>
+	
+	<p>
+      The mechanism in 2 is called arbitration in MySQL Cluster and it is described in an article by Frazer Clement discussing the CAP Theorem based issues <a href="https://messagepassing.blogspot.com/2012/03/cap-theorem-and-mysql-cluster.html" target="_blank">here</a>. Notice the consistency in the CAP Theorem means 'whether two copies of the same data in a distributed system hold the same value' and hence is very different from the consistency discussed in this article.
+    </p>
+	
+	<p>
+	  When a node or network failure is detected by the NDB kernel, updates are not allowed to commit; on the other hand, between the occurrence of a split-brain situation and its detection, committed updates are only possible in node groups with all replicas to be up; both are true because the replication between nodes in a node group is synchronous. This implies consistency defined in the CAP Theorem is honored before, during and right after a split-brain if a surviving subset will be able to continue to provide service. After that, this consistency is only honored in the surviving subset until the partition is resolved.
+    </p>
+	
+	<p>
+      This also implies the consistency discussed in this article is honored since Condition <a href="#condition2'">2'</a> is never violated in the whole process. So in the case a surviving subset exists, after network partition is resolved and other nodes are brought back online, these nodes will be synchronized with the surviving subset before they are serving requests again. Whether this is done during the application is executing or after it's finished execution, it won't affect consistency as long as it does finish.
+    </p>
+
+    <p>
+      On the other hand, if no such subset survives the partition, the cluster will shutdown and a restart is needed after network partition is resolved. This behaves exactly like the durability of consistency case.
+    </p>
+	
+	<p>
+      In the traditional replication scenario, if a split-brain situation occurs in the slave, there are two cases. Case 1: there is a surviving subset that can continue to provide service; we only need to resolve the partition and sync the rest of the slave with the surviving subset. Case 2:  there is no surviving subset that can continue to provide service; after partition is resolved, the slave need to be initialized and replication need to be set up again with the master. There is a slight complication in Case 1, if the SQL node used for replication is not attached to the surviving subset. We need to stop the service on the slave first and then set up replication with a SQL node in the surviving subset or treat it as in Case 2 and set that up after partition is resolved before service can be restored.
+    </p>
+	
+	<p>
+	  If, on the other hand, a split-brain situation occurs in the master in the traditional replication scenario, there are also two cases. Case 1: there is a surviving subset that can continue to provide service; we only need to resolve the partition and sync the rest of the master with the surviving subset. Case 2:  there is no surviving subset that can continue to provide service; in this case, we must restart the master after partition is resolved and consistency will be preserved as in the durability of consistency case. In Case 1, the complication that SQL node used for replication is not attached to the surviving subset must also be addressed. Namely, we need to stop the service on the slave first and then set up replication with a SQL node in the surviving subset before service can be restored.
+	</p>
+	
+	<p>
+      In an active-active replication deployment, in the case the primary cluster suffers a partition, there are two cases. Case 1: if there is a surviving subset in the primary so that the SQL node for replication is also included, the replication will continue and we only need to resolve the partition and reinstate the primary by syncing the rest of it with the surviving subset. Case 2: otherwise, the secondary will assume its role until partition in the primary is resolved and it is synced with the secondary. In the case the secondary cluster suffers a partition, the situation is similar.
+	</p>
+	
   </div>
   	
 </div>
