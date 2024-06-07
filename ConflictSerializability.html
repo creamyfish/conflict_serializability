@@ -6911,6 +6911,10 @@ highly appreciated.
       In an active-active replication deployment, in the case the primary cluster suffers a partition, there are two cases. Case 1: if there is a surviving subset in the primary so that the SQL node for replication is also included, the replication will continue and we only need to resolve the partition and reinstate the primary by syncing the rest of it with the surviving subset. Case 2: otherwise, the secondary will assume its role until partition in the primary is resolved and it is synced with the secondary. In the case the secondary cluster suffers a partition, the situation is similar.
 	</p>
 	
+	<p>
+	  One interesting question is: is there a system that is consistent, but in which durability of consistency could be violated? I don't have a database example for that. But the following <a href="https://msrc.microsoft.com/blog/2023/09/results-of-major-technical-investigations-for-storm-0558-key-acquisition/" target="_blank">incident</a> that resulted in Raimondo, US secretary of commerce's email account being hacked certainly smells like it. The key piece of info there is “The crash dumps, which redact sensitive information, should not include the signing key. In this case, <span style="color:red">a race condition</span> allowed the key to be present in the crash dump (this issue has been corrected).”. The consumer signing system in question is not a fault-tolerant system. Faults show up in a fault-tolerant system as inconveniences, not mishaps. 
+	</p>
+	
   </div>
   	
 </div>
