@@ -143,37 +143,62 @@ tr:nth-child(even) {
 	</dl>
   </dd>
   <dt>
-    <a href="#section4">4. Type D of the Serializability Theorem:TODO</a>
-  </dt>
-  <dt>
-    <a href="#section5">5. History, issues and the possible future</a>
+    <a href="#section4">4. Type D of the Serializability Theorem</a>
   </dt>
   <dd>
     <dl>
 	  <dt>
-	    <a href="#section5.1">5.1 Questions to be answered</a>
+	    <a href="#section4.1">4.1 Isolation levels for a field-based database system</a>
+	  </dt>
+	  <dt>
+	    <a href="#section4.2">4.2 Demonstration of type C of the Serializability Theorem under the newly defined isolation levels</a>
+	  </dt>
+	  <dt>
+	    <a href="#section4.3">4.3 Type D of the Serializability Theorem</a>
+	  </dt>
+	  <dt>
+	    <a href="#section4.4">4.4 Relations between different types of the Serializability Theorem</a>
+	  </dt>
+	  <dt>
+	    <a href="#section4.5">4.5 Type H of the Serializability Theorem</a>
+	  </dt>
+	</dl>
+  </dd>
+  <dt>
+    <a href="#section5">5. Generic generalization of Serializable Snapshot Isolation to a distributed database system:TODO</a>
+  </dt>
+  <dt>
+    <a href="#section6">6. Field level capable locking system:TODO</a>
+  </dt>
+  <dt>
+    <a href="#section7">7. History, issues and the possible future</a>
+  </dt>
+  <dd>
+    <dl>
+	  <dt>
+	    <a href="#section7.1">7.1 Questions to be answered</a>
 	  </dt>
 	  <dd>
 	    <dl>
 		  <dt>
-	        <a href="#section5.1.1">5.1.1 Question one</a>
+	        <a href="#section7.1.1">7.1.1 Question one</a>
 	      </dt>
 		  <dt>
-	        <a href="#section5.1.2">5.1.2 Question two</a>
+	        <a href="#section7.1.2">7.1.2 Question two</a>
 	      </dt>
 		  <dt>
-		    <a href="#section5.1.3">5.1.3 <span style="color:red">Free and paid service</span></a>
+		    <a href="#section7.1.3">7.1.3 <span style="color:red">Free and paid service</span></a>
 		  </dt>
 		  <dt>
-	        <a href="#section5.1.4">5.1.4 Question three</a>
+	        <a href="#section7.1.4">7.1.4 Question three</a>
 	      </dt>  
 		</dl>
 	  </dd>
 	  <dt>
-	    <a href="#section5.2">5.2 Hot spot problem</a>
+	    <a href="#section7.2">7.2 Hot spot problem</a>
 	  </dt>
 	  <dt>
-	    <a href="#section5.3">5.3 Security implications</a>
+	    <a href="#section7.3">7.3 Security implications</a>
 	  </dt>
 	</dl>
   </dd>
@@ -519,7 +544,7 @@ tr:nth-child(even) {
 	</div>
 	
 	<p>
-      Let's investigate the order of events inside a transaction in a standalone system and how the “happened before” partial order preserves it. Although there are different execution paths in a transaction due to the loops and conditional branches in it, its execution follows exactly one such path. In this sequential execution of the transaction, SQL statements are executed one by one and the order between events from different SQL statements apparently coincides with the “happened before” partial order. Also, in SQL statement like 'update t set col=col+1', the reading of col must happen before the writing since this is just the 'read-modify-write' sequence. Again this coincides with the “happened before” partial order. Some events in a transaction can't be ordered by the “happened before” partial order, for example, the predicate read and reads/writes that follow. This is because the predicate read is a logical operation and its duration can overlap with reads/writes that follow. But now we have shown that Condition 1 is satisfied with the “happened before” partial order for standalone database system like MySQL InnoDB and PostgreSQL.
+      Let's investigate the order of events inside a transaction in a standalone system and how the 'happened before' partial order preserves it. Although there are different execution paths in a transaction due to the loops and conditional branches in it, its execution follows exactly one such path. In this sequential execution of the transaction, SQL statements are executed one by one and the order between events from different SQL statements apparently coincides with the 'happened before' partial order. Also, in SQL statement like 'update t set col=col+1', the reading of col must happen before the writing since this is just the 'read-modify-write' sequence. Again this coincides with the 'happened before' partial order. Some events in a transaction can't be ordered by the 'happened before' partial order, for example, the predicate read and reads/writes that follow. This is because the predicate read is a logical operation and its duration can overlap with reads/writes that follow. But now we have shown that Condition 1 is satisfied with the 'happened before' partial order for standalone database system like MySQL InnoDB and PostgreSQL.
     </p>
 
     <p>
@@ -1145,7 +1170,7 @@ tr:nth-child(even) {
     </p>
 
     <p>
-      There are three cases. In the first case, all fields in the tuple are modified and we need to do nothing. In the second case, a tuple read happened before the write in the same statement like in 'update...set col=col+1'; in this case, the values naturally come from the tuple read. In the third case, it is a blind write like 'update table grades set grade=”A”'. In this article, we assume the following:
+      There are three cases. In the first case, all fields in the tuple are modified and we need to do nothing. In the second case, a tuple read 'happened before' the write in the same statement like in 'update...set col=col+1'; in this case, the values naturally come from the tuple read. In the third case, it is a blind write like 'update table grades set grade=”A”'. In this article, we assume the following:
     </p>
 
     <p>
@@ -1380,7 +1405,7 @@ tr:nth-child(even) {
 	
 	<div class="theorem" id="serializability_theorem">
 	
-      <span style="color:red">Serializability Theorem(type A, B & C)</span>: <b>Let H be a history with partial order 'happened before' satisfying Conditions <a href="#condition1">1</a>, <a href="#condition2'">2'</a>, <a href="#condition3'">3'</a>, <a href="#condition4">4</a> and proscribing Conditions <a href="#condition5">5</a>, <a href="#condition6">6</a>, where the predicate-based conflicts are based on Definitions <a href="#definition3'">3'</a> & <a href="#definition4'">4'</a>. Then H proscribes Condition <a href="#condition7">7</a> iff it is serializable</b>.
+      <span style="color:red">Serializability Theorem(type A, B & C)</span>: <b>Let H be a history with partial order 'happened before' satisfying Conditions <a href="#condition1">1</a>, <a href="#condition2'">2'</a>, <a href="#condition3'">3'</a>, <a href="#condition4">4</a> and proscribing Conditions <a href="#condition5">5</a> & <a href="#condition6">6</a>, where the predicate-based conflicts are based on Definitions <a href="#definition3'">3'</a> & <a href="#definition4'">4'</a>. Then H proscribes Condition <a href="#condition7">7</a> iff it is serializable</b>.
 
 	</div>
 	
@@ -6923,12 +6948,507 @@ highly appreciated.
 
   <h2>4. Type D of the Serializability Theorem</h2>
   
-  <h3>TODO</h3>
+  <p>
+    So far, we've only applied type B of the Serializability Theorem, which is still based on a system with tuple versions, to a database application – TPCC. With the proof of type C of the Serializability Theorem, we are at a place to re-define isolation levels like Read-Committed, Repeatable-Read and Snapshot Isolation that are free of tuple versions and based on field versions only so that it can be applied.
+  </p>
+  
+  <div id="section4.1">
+    <h3>4.1 Isolation levels for a field-based database system</h3>
+  
+    <div class="definition">
+      <b>Snapshot Isolation</b>: Item reads and predicate reads are still based on the snapshot corresponding to the starting time of the transaction. Conflict caused by writes of two concurrent transactions, however, only exists if the intersection of the write sets of these two transactions is not empty. Timestamps are assigned to writes as usual.
+    </div>
+  
+    <p>
+      For a distributed database system, since we can't synchronize clocks to 100% accuracy by <a href="#la78" >[La 78]</a>, we must provide a new way to generate the timestamps. For example, Google's Spanner comes with a way to implement Snapshot Isolation without synchronizing clocks accurately, which is described in Appendix <a href="#appD" >D</a>. More example will be given in the next section.
+    </p>
+
+    <p>
+      Also to facilitate such a Snapshot Isolation implementation for a field-based system, we need to associate each field a timestamp, instead of one for each tuple. This will increase storage footprint. However, there are usually large amount of memory and disk space in modern servers. And a distributed database system can also be scaled horizontally. This should not be a problem in general.
+    </p>
+  
+    <div class="definition">
+      <b>Read-Committed</b>: Item reads and predicate reads use the latest committed item versions as in the Read-Committed isolation level in MySQL InnoDB and MySQL Cluster. A write in a transaction is interpreted as field writes within a write set. Field level lock is acquired before a field write and released upon commit.
+    </div>
+  
+    <p>
+      This definition applies to both standalone and distributed database since the term 'latest' refers to a local clock. And a field level capable locking system is needed for this Read-Committed isolation level.
+    </p>
+
+    <p>
+      Before defining a new Repeatable-Read isolation level, we need to take a closer look at MySQL InnoDB's.
+    </p>
+  
+    <div class="example" id="example25">
+  
+      <p>
+        <b>Example 25</b>: Assuming the same table definition as in Example <a href="#example0">0</a> with these two tuples in table t: (1,2,2,10) and (3,5,5,10). Under the Repeatable-Read isolation level of MySQL InnoDB, execute the transactions T1 and T2 in the following order:
+      </p>
+	
+	  <pre><b>
+	             T1                                                                  T2
+
+        start transaction;
+
+        select * from t;
+
+                                                                            start transaction;
+
+                                                                            update t set id2=1 where id1=1;
+
+                                                                            update t set id2=4 where id1=3;
+
+                                                                            commit;
+
+        update t set id3=3 where id1=1;
+
+        select * from t;
+
+        commit;                                                                                
+	  </b></pre>
+	
+	  <p>
+        The first select statement of course returns the two tuples to start with, while the second select statement returns the following two tuples: (1,1,3,10), (3,5,5,10). So when T1 updates a tuple in it, it reads the most recently committed tuple version and applies the update to this version; otherwise it reads only the versions before the time T1 starts. In other words, T1 behaves like in the Read-Committed isolation level for the first tuple and like in Snapshot Isolation for the second. This, however, doesn't violate the Repeatable-Read isolation level definition in the SQL standard since it still refutes the anomalies proscribed in that definition. Notice there is a conflict loop in this history since there is an item-based RW conflict from T1 to T2 and there is an item-based WR conflict from T2 to T1 on the id2 field of the first tuple. Actually if this history was serializable, the order had to be {T1, T2} since the first select in T1 read the original state. But the the second select in T1 should've read (1,2,3,10) for the first tuple. That is a contradiction since type B of the Serializability Theorem applies here.
+      </p>
+	
+	  <pre><b>
+	                                                                                            (To be continued ...)  
+	  </b></pre>
+	
+    </div>
+  
+    <p>
+      This behavior of MySQL InnoDB is reasonable since its Repeatable-Read isolation level is a tuple-based system and the tuple version established by T1 is after that of T2's, so T1 should be able to see what the previous version is. With a field-based system where the concept of tuple version is absent, the story is very different as we will see shortly.
+    </p>
+
+    <p>
+      Remark: If we place a statement 'select * from t;' into T1 right after T2's commit and before T1's update, it will return the two original tuples too.
+    </p>
+  
+    <div class="definition">
+      <b>Repeatable-Read</b>: Item reads and predicate reads use the committed item versions before the starting time of a transaction as in the Repeatable-Read isolation level in MySQL InnoDB. A write in a transaction is interpreted as field writes within the write set. Field level lock is acquired before a field write and released upon commit. Timestamps are assigned to writes as usual.
+    </div>
+  
+    <p>
+      For a distributed database system, since we can't synchronize clocks to 100% accuracy, we must provide a new way to generate the timestamps. Also as in the Snapshot Isolation case, we need to associate each field with a timestamp.
+    </p>
+  
+    <p>
+      These three field-based, newly defined isolation levels are all variants of the generic Read-Committed isolation level in the SQL standard since they all proscribe the following two anomalies:
+    </p>
+  
+    <pre><b>
+      P0: w1[x] … w2[x] … (c1 or a1),
+
+      P1: w1[x] … r2[x] … (c1 or a1), a for abort and c for commit here.                                                                                      																								
+    </b></pre>
+  
+    <p>
+      The three field-based, newly defined isolation levels mainly concern P1, but P0 is implicit according to Adya's paper (<a href="#ad00" >[La 78]</a>). Of course, we should supply a version of P1 for predicate reads here so that it becomes:
+    </p>
+  
+    <pre><b>
+      P1: w1[x] … r2[x] … (c1 or a1),
+
+          w1[x] … r2(P: Vset(P)) … (c1 or a1), a for abort and c for commit here.
+    </b></pre>
+	
+  </div>
+  
+  <div id="section4.2">
+    <h3>4.2 Demonstration of type C of the Serializability Theorem under the newly defined isolation levels</h3>
+	
+    <p>
+      Since type C of the Serializability Theorem is based on the generic Read-Committed isolation level with conflicts interpreted at the field level, this means Condition <a href="#condition5" >5</a> & <a href="#condition6" >6</a> are both proscribed by the three field-based, newly defined isolation levels. Conditions <a href="#condition1" >1</a>, <a href="#condition2'" >2'</a>, <a href="#condition3'" >3'</a> & <a href="#condition4" >4</a> are just common sense. Also we require the write events of a field to form a serial order that is consistent with the 'happened before' partial order in type C of the Serializability Theorem and it is certainly satisfied by the definitions of the three isolation levels. Hence we may apply type C of the Serializability Theorem to the three field-based, newly defined isolation levels as long as we may prevent conflict loops to form.
+    </p>
+  
+    <div class="example">
+	
+      <p>
+	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: Under this newly defined Repeatable-Read isolation level, the same execution will give a different result. In particular. the second select in T1 should return (1,2,3,10) for the first tuple and (3,5,5,10) for the second one. In other words, for the first tuple, T1 sees the update to id3 by T1, but not the update to id2 by T2 since everything is interpreted at field level now and T1 is NOT updating id2. Because there is no conflict loop in this history, it is serializable by type C of the Serializability Theorem. And the order of serialization is, of course, {T1, T2}. This is just another example that we should use a field-based system since it leads to less conflicts in general. 
+	  </p>
+	
+	  <p>
+        If we alter the original execution to the following under this newly defined Repeatable-Read isolation level, we see behavior similar to the original one again.
+      </p>
+	
+	  <pre><b>
+	                 T1                                                          T2
+
+        start transaction;
+ 
+        select * from t;
+
+                                                                        start transaction;
+
+                                                                        update t set id2=1 where id1=1;
+
+                                                                        update t set id2=4 where id1=3;
+
+                                                                        commit;
+
+        update t set id2=id2+1 where id1=1;
+
+        select * from t;
+
+        commit;                                                                                   
+	  </b></pre>
+	
+	  <p>
+        The second select in T1 should return (1,2,2,10) for the first tuple and (3,5,5,10) for the second one since T1 reads the update to id2 by T2 on the first tuple, but not the one on the second one. This is different from the second select in T1 in either serial execution. That is because there is also a conflict loop in this history since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on id2 for the first tuple.
+      </p>
+	
+	  <pre><b>
+	                                                                                            (To be continued ...)  
+	  </b></pre>
+	
+    </div>
+	
+  </div>
+  
+  <div id="section4.3">
+    <h3>4.3 TypeD of the Serializability Theorem</h3>
+	
+	<p>
+      To support symmetric access via multiple attributes and get rid of Example <a href="#example0">0</a>, we need a new type of Serializability Theorem other than type C, namely, type D of the Serializability Theorem in which the 'decision set' could be of more than one field. To do that, we are going to capture a 'decision set' version concept out of the system for type C where only field versions are present. In other words, we are assuming a system that offers a generic Read-Committed isolation level and only field versions are available in the following discussion. This is very different from a system with the concept of tuple version where we may simply derive a 'decision set' version from a tuple version.
+    </p>
+	
+	<p>
+      We will first use a trick to capture the 'decision set' version concept and then generalize it for type D of the Serializability Theorem. The trick is to pick a field in the 'decision set' and require that each update of the 'decision set' also modifies this specific field. The modifications of the specific field naturally impose a total order on its field versions and we hope that this total order will lead to a total order among the 'decision set' versions to be defined. It turns out this goal can be achieved as follows: because the total order of the specific field versions is generated by a sequence of serial write events as we mentioned after the definition of the 'happened before' partial order, we may require the following condition to hold.
+    </p>
+	
+	<div class="condition" id="conditionTwoStar">
+	  <b>Condition **</b>: The specific field is modified last and if another field in the 'decision set' is also updated in the same transaction, it is NOT available for access until the update of the specific field is finished. Order of events is interpreted with the 'happened before' partial order as usual.
+	</div>
+	
+	<p>
+      Suppose the 'decision set' consist of fields {a, b, c}, c being the specific field. Transaction T1 updates all of them while T2 only updates b & c such that the order of update of c is T2 before T1. First, let's observe that the update of b by T2 'happened before' that of T1 too. Proscribing P0 implies, in any reasonable implementation, the write by the second transaction must wait until after the commit of the first one since otherwise if the first transaction, for example, got context-switched out, P0 might result. So if the writing of b by T1 'happened before' that of T2, the commit event of T1 'happened before' that of T2 too since it 'happened before' the write of b by T2. But we also know that it should be the other way around from the writing of c. This is a contradiction and the observation is correct.
+    </p>
+	
+	<p>
+      Then the update of b in T1 is confined between write events of c since: the update of b in T1 'happened before' the update of c in T1 is asserted by Condition <a href="#conditionTwoStar">**</a>; the update of c in T2 'happened before' the commit of T2, which in turn 'happened before' the update of b in T1 because P0 is proscribed. The update of a in T1, however, can overlap with that of c in T2. This guarantees a new 'decision set' version is generated whenever the write event of the specific field ends: for fields updated in the current transaction, the versions just generated are used; for fields not updated, the latest generated versions or those from original database state are used. With this definition of a 'decision set' version, the writes on the specific field give rise to a 'decision set' version system and a total order can be imposed on the 'decision set' versions so that total order of its derived field versions on that specific field coincides with the original total order of the specific field versions. It is also easy to see that the order of 'decision set' versions coincides with that of other fields since they are both consistent with the order of the specific field.
+    </p>
+	
+	<p>
+      And what if two multi-field 'decision set's overlap? Do they introduce the same 'derived' versions on the set of overlapping fields? It turns out they do. The observation is that for each 'derived' version, the overlapping set must be modified and this implies both 'derived' version sets coincide. So the only problem is these two 'derived' version sets may not have the same total order imposed. But that is impossible since by the previous analysis, the total order imposed on both 'derived' version sets must coincide with the 'happened before' partial order and hence must be the same. A similar argument can be used to show that the 'derived' field versions from these 'derived' overlapping set versions coincide with the original field versions. So the definition of this 'decision set' version system is sound.
+    </p>
+	
+	<p>
+      Remark: In Condition <a href="#conditionTwoStar">**</a>, we use the completion of update of the specific field to signify the establishment of a new 'decision set' version. The fact that no transaction can access the 'decision set' version before that doesn't mean they have to be accessed right after. For example, if we were to implement such a field-based system for MySQL Cluster, this completion of update can be chosen to be when the primary replica gives up the field locks on a tuple. Then the 'decision set' version generated can't be updated until the corresponding locks are given up in the secondary replica. On the other hand, if we were to implement it for MySQL InnoDB, we may choose this completion of update to be when field locks are released and the 'decision set' version will be available for both read and update immediately. So Condition <a href="#conditionTwoStar">**</a> is defined in such a way that it will allow different implementations.
+    </p>
+	
+	<p>
+      In the newly defined Read-Committed isolation level, a write event can be represented by the acquisition and release of the field lock. To satisfy Condition <a href="#conditionTwoStar">**</a>, we may acquire field locks for all the fields written in an order so that unnecessary dead locks wouldn't arise, update the fields, and then release the locks simultaneously; or we may request a lock that covers all the fields written in the 'decision set' if the field level capable locking system supports it and perform the updates while the lock is held. Notice in the former case, it is usually not possible to acquire all the field locks simultaneously since some of them may require lock wait, but it is in general possible to release them at the same time. In the newly defined Snapshot Isolation isolation level, writes on the specific field clearly generate 'decision set' versions since corresponding transactions are non-concurrent and it also satisfies Condition <a href="#conditionTwoStar">**</a>. In the newly defined Repeatable-Read isolation level, the 'decision set' version is generated as in the Read-Committed isolation level and Condition <a href="#conditionTwoStar">**</a> is satisfied for the same reason as in the Read-Committed isolation level case. Notice in both Snapshot Isolation and  Repeatable-Read case, we may use the timestamp for the specific field version as that of the corresponding 'decision set' version.
+    </p>
+	
+	<p>
+      If we try to use the 'decision set' version we've just defined for a predicate read, we must make sure it is the 'decision set' version that we use, not an arbitrary combination of field versions in the 'decision set' since we are now in a field-based system. In the newly defined Read-Committed isolation level, this can be done by acquiring short read lock on the specific field before the predicate read of a tuple and make sure the matching process happens in the duration the lock is held. Since updates for the fields in the 'decision set' only happen after the specific field is locked, the short read lock guarantees the reading of a 'decision set' version. In the case an initial internal version for the 'decision set' is read, the write lock acquired on the specific field before the read should guarantee the reading of a 'decision set' version. In the newly defined Snapshot Isolation isolation level, the predicate read returns all the latest field versions in the 'decision set' that are before the starting time of the transaction and the fact that these field versions constitute the latest 'decision set' version is clear from the way 'decision set' versions are generated. In the case an initial internal version for the 'decision set' is read, the situation is the same. In the newly defined Repeatable-Read isolation level, as Example <a href="#example25">25</a> indicates, different scenarios arise. If the 'decision set' of the predicate read is NOT altered in the transaction or the predicate read happens before the alternation, it behaves the same as in the Snapshot Isolation isolation level case. Namely, it doesn't see any 'decision set' version established after the starting time of the transaction. Otherwise, if the predicate read happens after the alternation, it behaves the same as in the Read-Committed isolation level case. Namely, it sees 'decision set' versions established after the starting time of the transaction. In either case, we may have it return a 'decision set' version for the predicate read.
+    </p>
+	
+	<div class="example">
+      <p>
+	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: If we replace the second select in T1 in the original history with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level, the first tuple will be a match for this predicate read because the reading of the initial internal 'decision set' version sees the update in T2(say, we use id2 as the specific field). And a conflict loop exists in the execution since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on the 'decision set' {id2, id3} of the first tuple.
+	  </p>
+	  
+	  <pre><b>
+	                                                                                            (To be continued ...)  
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      In general, we should impose the following condition when transactions interact with the 'decision set' version system.
+    </p>
+	
+	<div class="condition" id="conditionThreeStar">
+	  <b>Condition ***</b>: A predicate read or a read of an initial internal 'decision set' version reads a 'decision set' version instead of an arbitrary combination of field versions.
+	</div>
+	
+	<p>
+      From the discussion above, we know that the three newly defined isolation levels all satisfy Condition <a href="#conditionThreeStar">***</a>.
+    </p>
+	
+	<p>
+      Remark: If we were to implement a field-based system for MySQL Cluster, Condition <a href="#conditionThreeStar">***</a> can be satisfied easily since it is just an implementation of the newly defined Read-Committed isolation level.
+    </p>
+	
+	<p>
+      With an initial internal 'decision set' version defined, we may apply updates of the 'decision set' to it successively and create an internal 'decision set' version system when a transaction need to modify this specific 'decision set'. And that is the last piece of the puzzle for presenting the following
+    </p>
+	
+	<div class="theorem">
+	
+	  <b>Serializability Theorem(with 'decision set' versions induced by a specific field)</b>: Let H be a history in a field-based system with 'decision set' versions induced by a specific field so that Condition <a href="#conditionTwoStar">**</a> and Condition <a href="#conditionThreeStar">***</a> are satisfied and with the 'happened before' partial order satisfying Conditions <a href="#condition1">1</a>, <a href="#condition2'">2'</a>, <a href="#condition3'">3'</a>, <a href="#condition4">4</a> and proscribing Conditions <a href="#condition5">5</a> & <a href="#condition6">6</a>, where the predicate-based conflicts are based on Definitions <a href="#definition3'">3'</a> & <a href="#definition4'">4'</a>. Then H proscribes Condition <a href="#condition7">7</a> iff it is serializable.
+	  
+	</div>
+	
+	<div class="proof">
+	
+	  <p>
+	    Proof: The proof is a hybrid one of that of type B and type C's. In particular, the arguments involving 'decision set' are similar to that of type B's and those involving fields are similar to that of type C's. This time a 'decision set' version is induced by the specific field, instead of deriving from a tuple version though.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      In general, we need a systematic way to define a 'decision set' version system so that the following requirements are met for type D of the Serializability Theorem.
+    </p>
+	
+	<ol>
+	  <li>
+	    A way to define the system.
+      </li>
+	  <li>
+	    A way to read the 'decision set' versions in a predicate read without mistakenly using an arbitrary set of field versions in the 'decision set' instead, so that predicate-based conflicts can be defined.
+      </li>
+	  <li>
+	    A way to read the 'decision set' versions for the initial internal version without mistakenly using an arbitrary set of field versions in the 'decision set' instead, so that successive internal versions and eventually the committed 'decision set' version can be defined.
+      </li>
+	  <li>
+	    And also a way to introduce item-based conflicts between reads and writes of 'decision set' versions so that we can reason about conflicts with them.
+      </li>
+	</ol>
+	
+	<p>
+      Remark: Again we define in requirement 4 a third kind of conflict other than the item-based conflicts between fields and predicate-based conflicts as in type B of the Serializability Theorem. In type A, this is buried under the concept of tuple versions and in type C and the type with 'decision set' versions induced by a specific field we just presented it is opaqued by conflicts between field versions and the specific field versions. In type B, we've tried to isolate it from the tuple versions. And now in type D we've made it stand out more clearly since we don't have tuple versions in the way any more. This is the exact ingredient we need to fence off Example <a href="#example0">0</a> since now updating different fields in a 'decision set' will result in a conflict.
+    </p>
+
+    <p>
+      Of course, it also requires a way to identify which field version to read after a predicate read if item reads follow as in type C. All these lead to a new type of the Serializability Theorem as follows.
+    </p>
+	
+	<div class="theorem" id="serializability_theorem_D">
+	  
+	  <b>Serializability Theorem(type D)</b>: On top of a field-based system, given a way to define a 'decision set' version system so that the former four requirements are all satisfied, and let H be a history with the 'happened before' partial order satisfying Conditions <a href="#condition1">1</a>, <a href="#condition2'">2'</a>, <a href="#condition3'">3'</a>, <a href="#condition4">4</a> and proscribing Conditions <a href="#condition5">5</a> & <a href="#condition6">6</a>, where the predicate-based conflicts are based on Definitions <a href="#definition3'">3'</a> & <a href="#definition4'">4'</a>. Then H proscribes Condition <a href="#condition7">7</a> iff it is serializable.
+	  
+	</div>
+	
+	<div class="proof">
+	
+	  <p>
+	    Proof: Similar to the Serializability Theorem with 'decision set' versions induced by a specific field.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      This is not a surprise since type D of the Theorem is just a generalization that we hoped the Ad-Hoc one with a specific field would have led to. Hence what is remaining is to define a 'decision set' version system for all three newly defined isolation levels so that they satisfy all four requirements so that we can apply the theorem to them.
+    </p>
+	
+	<p>
+	  In the newly defined Snapshot Isolation isolation level, we may require updates to the same 'decision set' of a tuple to be conflicting. This way transactions with these conflicting updates can NOT to be concurrent. Hence the 'decision set' versions are defined with the temporal order without needing the specific field and can be labeled with a timestamp for each of them. The way to read it in a predicate read or as an initial internal version is timestamp based, just as reading a tuple in a tuple based system. Starting with the initial internal version, we can write all the internal versions and eventually a committed version is generated and timestamped if the transaction commits. And the item-based conflicts between these writes and reads of the 'decision set' versions are defined like in a tuple based system. Again we can argue that consistency issues related to 'derived' versions will not arise as in the case where 'decision set' versions are defined with the help of a specific field.
+	</p>
+	
+	<p>
+      In the newly defined Read-Committed isolation level, things are more complicated since a field level capable locking system has to be in place and there could be different implementations. While we are at the subject, I'd like to discuss a couple of alternatives and hope it would help pave the way to such an implementation in the future.
+    </p>
+	
+	<p>
+      <b>Alternative one</b>: In the field level capable locking system, we may acquire a lock that covers exactly the 'decision set'. It is like a tuple lock, except that it might cover less fields. And we call it a 'decision lock'.
+    </p>
+
+    <p>
+      <b>Alternative two</b>: In the field level capable locking system, we may only acquire field locks to cover all the fields of the 'decision set'.
+    </p>
+	
+	<p>
+      For alternative one, we consider two strategies. Let's say the 'decision set' in concern consists of fields {a, b, c, d, e} and we call it I. And there is also another 'decision set' overlapping with it with fields {d, e, f} and we call it II.
+    </p>
+
+    <p>
+      In strategy one, when 'decision set' I is updated, if d or e is also updated, we acquire a long 'decision write lock' that covers all fields a-f; if neither of d or e is updated, we acquire a long 'decision write lock' that covers fields a-e. Once the lock is acquired, 'decision set' I is updated('decision set' II is also updated if d or e is updated) and a new version of I is established when the lock is released at transaction commit. This guarantees serial updates of 'decision set' I and the versions for 'decision set' I are well-defined. The most recently generated 'decision set' versions are used in predicate reads or the read for the initial internal version by requesting a short 'decision read lock' or a long 'decision write lock' respectively. Once the initial internal version is read, updates are applied to it in order to generate the internal versions and eventually lead to the committed version of a 'decision set'. And the way to recognize the item-based conflicts between these reads and writes of a 'decision set' is the same as in a tuple system case, even if writes don't necessarily share common fields.
+    </p>
+	
+	<p>
+      In strategy two, when 'decision set' I is updated, if d or e is also updated, we acquire a long 'decision write lock' that covers all fields a-e and a long 'decision write lock' that covers fields d-f(these two locks don't conflict with each other if they are requested by the same transaction); if neither d or e is updated, we only acquire a long 'decision write lock' that covers fields a-e. In either case, 'decision set' I is only updated after all the necessary locks are acquired. In this strategy, a 'decision set' version for I is well-defined since between the time the first lock is acquired and the last lock is released, no other transaction can acquire the long 'decision write lock' that covers a-e. And because an update only happens when 'decision set' I is covered with this 'decision write lock', it implies updates to 'decision set' I are serial. Notice the time between the first lock is acquired and the last lock is released for different transactions could overlap with each other. For example, if there was also a 'decision set' III consisting of fields a, b & c and the order we were acquiring and releasing these locks in a transaction was III, I, II, then there was a chance that one such transaction was releasing the lock for II and another such transaction was already acquiring the lock for III since they don't conflict with each other. Hence comparing with strategy one, the order of 'decision set' versions is a bit fuzzier, but it is still NOT ambiguous. The reading, writing and the item-based conflicts part of a 'decision set' will be the same as in strategy one. Of course to make the whole thing work, we probably should impose a global order to eliminate dead locks. But we are not going to elaborate on that here since strategy one is certainly a simpler choice and the main purpose of strategy two is to induce the following alternative two.
+    </p>
+	
+	<p>
+      A similar argument as in the Serializability Theorem with 'decision set' versions induced by a specific field case can be used to show that 'derived' versions from common fields of two overlapping 'decision set's will agree. So the definition of 'decision set' version system is sound.
+    </p>
+
+    <p>
+      In the newly defined Repeatable-Read isolation level, everything is similar to the Read-Committed isolation level case except that we need to assign a timestamp to each 'decision set' version to facilitate reads in a repeatable-read manner. Since things are a little bit fuzzy in strategy two of alternative one and alternative two, we need to be careful about which point of time we choose as the timestamp. The point in time when the first of acquired locks is released could to be one such choice. Then all four requirements for a 'decision set' version system will be satisfied and hence we've proved the following
+    </p>
+	
+	<div class="theorem">
+	
+	  <b>Corollary</b>: We may apply type D of the Serializability Theorem in the three newly defined isolation levels to achieve Serializability.
+	  
+	</div>
+	
+	<div class="example">
+      <p>
+	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: If we replace the second select in T1 with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level and this time the 'decision set' version system is not introduced with the help of a specific field, an item-based WW and an item-based WR conflict from T2 to T1 on 'decision set' {id2, id3} of the first tuple exist to form a conflict loop.
+	  </p>
+	  
+	  <pre><b>
+	                                                                                            ## 
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      All the Generalized Serializability Theorems and Ramification theorems are also true for type D's setting. The proofs are similar to those for Generalized Serializability Theorems and Ramification theorems for type B, except this time the 'decision set' is not derived.
+    </p>
+	
+  </div>
+  
+  <div id="section4.4">
+    <h3>4.4 Relations between different types of the Serializability Theorem</h3>
+	
+	<p>
+      Let's take a look at the relations between type D and the other three types of the Serializability Theorem. First type C is a special case of type D where its 'decision set's happen to contain just one field. Type B, of course, is a special case of type D where the 'decision set' version system is derived. So proving type D of the Serializability Theorem also proves type C and type B of it.
+    </p>
+
+    <p>
+      We claim we can use type D of the Serializability Theorem to prove type A of it. The 'if' part is the same as before and the arguments for the 'only if' part are as follows.
+    </p>
+	
+	<div class="proof">
+	
+	  <p>
+	    Proof: For any history H, we may interpret the conflicts at the tuple level, as in type A of the Theorem; or we may interpret them at the field level, as in type D of it. When conflicts in H are interpreted in both ways, please observe that for every conflict in type D, there is a corresponding chain of conflicts in type A. Actually for predicate-based conflicts, such a chain contains exactly one conflict; for item-based conflicts, we may fill in a few tuple writes between the original two operations. On the other hand, there are conflicts in type A that we can't find a correspondent in type D, such as updates of non-overlapping field sets of a tuple by two transactions. To avoid any ambiguity, we denote the DSG in type A of the Theorem as DSG(A) and the one in type D as DSG(D) in the context of this discussion. From this observation, it is easy to see that acyclicity of DSG(A) implies acyclicity of DSG(D).
+      </p>
+	  
+	  <p>
+        Starting with H in type A in which DSG(A) is acyclic, we may choose a topological sort of DSG(A) such that conflicts in it are going downward. For this specific topological sort, we know from last paragraph that the conflicts in DSG(D) are going downward in it too. So the chosen topological sort for DSG(A) is a topological sort for DSG(D) too. Apparently, there are no inconsistency issues concerning 'decision set' versions since they are all derived from tuple versions. Other conditions in type D of the Serializability Theorem are also satisfied. So we can apply it here and claim equivalence as specified in type D of the Serializability Theorem and what is left is to show equivalence as specified in type A.
+      </p>
+	  
+	  <p>
+        Type D of the Serializability Theorem tells us that transactions in H and Hs give rise to the same set of operations. We claim that in the type A context, transactions in H and Hs also give rise to the same set of operations too.
+      </p>
+
+      <p>
+        For tuple writes on a specific tuple, let's assume the first tuple version generated to be v in H. If the corresponding version v' in Hs turned out NOT to be the first one, then there must a version u' in Hs which happened to be the first one. Its corresponding version u in H had to be one that was after v. Let Tu be the transaction that generated u and u' and Tv be the transaction that generated v and v' in both H and Hs. Then in H, Tu must appear below Tv in the topological sort since there were a list of transactions which started with Tv and ended with Tu, such that there was a WW conflict between any two consecutive transactions in the list. But this contradicts with the fact that Tv must appear below Tu in Hs since Hs is serial. So the first tuple version in H coincides with that in Hs. For the rest of the tuple version order, we may use similar arguments and induction to show that H and Hs will give rise to the same thing.
+      </p>
+	  
+	  <p>
+        For tuple reads of a specific tuple, suppose transaction Ti in Hs reads the kth tuple version after the initial state of the database, k>=0(k=0 means it is from the original state of the database). We claim Ti in H reads the same tuple version too. If instead Ti in H read an earlier one than the kth version, assuming that the kth version was written by a different transaction Tj, we would have a list of transactions which stated with Ti and ended with Tj, such that there was a RW or WW conflict between any two consecutive transactions in the list. So Ti must appear before Tj in the topological sort, but this contradicts with the fact that Ti reads the kth tuple version in Hs since from last paragraph we know that Tj generated the kth version in Hs too and Ti in Hs appeared before it in the serial order. In the case Ti in H read an later one than the kth version, we may assume the version Ti read from was generated by Tl. The WR conflict between Tl and Ti would imply that Tl must appear before Ti in the topological sort. By the analysis of last paragraph, Tl would generate the same version after the kth one in Hs too. But then in Hs, Ti would've read a version after the kth one too since Ti also appeared after Tl in Hs. This contradicts with what we started. So tuple reads return the same tuple versions in H and Hs.
+      </p>
+	  
+	  <p>
+        Let's now look at the values read from or written to a specific tuple for corresponding tuple versions in H and Hs. If the values read are from the original database state, of course they coincide. For the first tuple version written, its committed value is obtained by applying a sequence of field writes to the initial internal version. The sequences of field writes in both histories coincide by type D of the the Theorem. So as long as we can show that the initial internal versions in both histories coincide, we may conclude that the first tuple versions coincide. The initial internal version is from a tuple read before the first write on the tuple since that is what we assume in type A of the Theorem. This tuple read can't read a tuple version later than the first one. That is because if it did, the write of this later version 'happened before' the read, which 'happened before' the write of the first version. This contradicts with the fact that the version order coincides with the 'happened before' partial order. So the values of the first tuple version coincide in H and Hs. Inductively, we may assume that the kth tuple version values coincide, and the reads before the kth version also coincide, for k>0. Then a similar argument as in the initial induction step can be used to conclude that tuple reads and values written coincide in both H and Hs.
+      </p>
+	  
+	  <p>
+        From type D of the Serializability Theorem, we've shown that corresponding predicate reads in H and Hs use 'decision set' versions from the same neighborhood of match change. Observe that there is a one-one correspondence between the set of neighborhood of match changes in type A and that of type D. Notice that the number of versions within a corresponding neighborhood may not be the same since in the type A case it may contain versions generated by updates that don't write the 'decision set' at all. In other words, neighborhood of match change in type A is formed by replacing 'decision set' versions from that of type D with corresponding tuple versions, plus the aforementioned tuple versions. From this construction of the neighborhood of match change, the fact that corresponding predicate reads in H and Hs use versions from the same neighborhood of match change in the type A case is also clear.
+      </p>
+
+      <p>
+        As claimed, we've proved (i) in type A of the Serializability Theorem and proof of (ii) is the same as in the original proof of type A.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      The choice of topological sort based on DSG(A) is important in this proof and we might be allured to choose one based on DSG(D). The following simple example tells us why we should not.
+    </p>
+	
+	<div class="example" id="example26">
+	
+	  <p>
+	    <b>Example 26</b>: Consider DSG(A): T1 → T2 with only one WW conflict from updates NOT on the same field. DSG(D) in this case is an empty graph, so we could choose T2, T1 as the order in a serial history if decision was based on DSG(D). And the original history is NOT equivalent to serial history {T2, T1}.
+      </p>
+	  
+	  <pre><b>
+	                                                                                            ## 
+	  </b></pre>
+	
+	</div>
+	
+	<p>
+	  From the relations between the four types of the Serializability Theorem, we know that type D is the most generic one. This is not a surprise since in type D we look at things at the field level – the finest granularity that is possible. It should be able to explain types that are of coarser granularity.
+	</P>
+	
+  </div>
+  
+  <div id="section4.5">
+    <h3>4.5 Type H of the Serializability Theorem</h3>
+	
+	<p>
+      Although finer control of conflicts can be achieved in type D of the Serializability Theorem, more resources and overhead may be necessary. For example, in a typical lock manager, usually one control block is necessary for each lock. Hence if we implement locks at the field level, depending on the implementation, a lot of extra memories and maintenance might be needed. On the other hand, in type A of the Theorem, unnecessary conflicts are introduced while resources and overhead might only leave a more reasonable footprint. So is there a way to combine the merits of both approaches? The previous proof actually suggests an affirmative answer for applications accessing more than one table.
+    </p>
+	
+	<p>
+      The key observation is that any conflict between a pair of transactions is actually interpreted in a specific table. This means we only need information like which tuple or field a transaction writes, or the range of tuples that a predicate read covers in a specific table to decide whether a conflict exists. Hence we may interpret these conflicts on a per table basis. In other words, we may interpret conflicts at tuple level for one table and do that at field level for another. This gives rise to the first hybrid Serializability Theorem as follows:
+    </p>
+	
+	<div class="theorem" id="serializability_theorem_H">
+	  
+	  <b>Serializability Theorem(type H, H for hybrid)</b>: Given the way to interpret conflicts described above, and let H be a history with the 'happened before' partial order satisfying Conditions <a href="#condition1">1</a>, <a href="#condition2'">2'</a>, <a href="#condition3'">3'</a>, <a href="#condition4">4</a> and proscribing Conditions <a href="#condition5">5</a> & <a href="#condition6">6</a>, where the predicate-based conflicts are based on Definitions <a href="#definition3'">3'</a> & <a href="#definition4'">4'</a>. Then H proscribes Condition <a href="#condition7">7</a> iff it is serializable.
+	  
+	</div>
+	
+	<div class="proof">
+	
+	  <p>
+	    Proof: Only the 'only if' part requires a proof. The DSG is a hybrid one, there are both tuple-based and field-based conflicts inside. Acyclicity of this DSG allows us to choose a topological sort. Interpreting those tuple-based conflicts at the field level gives us a new DSG which is still acyclic and the chosen topological sort is still a qualified one for this new DSG since each tuple-based conflict either gives rise to one field-based one or just disappears in this process. We then apply type D of the Serializability Theorem to it and the rest goes like in the proof where we use type D of the Serializability Theorem to prove type A of it.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	  
+	</div>
+	
+	<p>
+      So the next question naturally is: on what tables should we use tuple-based/field-based conflict resolution? We introduce a concept of 'logical group' within a tuple to answer it.
+    </p>
+	
+	<div class="definition">
+	  
+	  <p>
+        <b>Definition</b>: A logical group within a tuple consists of fields that can be accessed independently.
+	  </p>
+	  
+	</div>
+	
+	<p>
+      Some fields in a tuple must co-variate with others and they should be put into a logical group. For example, consider the customer table in the TPCC application. There is a group of fields related to the customer's address info and there is also a group of fields related to the customer's credit info. These two can be viewed as two different logical groups. That is because in a real world warehouse application, after the tuple's initial insertion, these two groups are probably modified by two independent transactions. If we use field-based conflict resolution on the customer table, these two transactions don't have to conflict with each other at the lock level in a lock-based system; on the other hand if tuple-based conflict resolution is used, they are guaranteed to conflict with each other at the lock level.
+    </p>
+
+    <p>
+      So the answer to our question is: if there are more than one logical groups in a table, consider using field-based conflict resolution; on the other hand, if there is only one logical group within a table, tuple-based conflict resolution is enough. Notice that if fields in a key in a table are only used in a predicate read, they don't constitute a logical group, otherwise they do. Also, logical groups are application dependent. For example, if TPCC turns out to be a warehouse application for a postal service, the zip code field and other fields in the address might be modified independently by two transactions since the postal service might change the zip code for a specific address and they constitute two logical groups in that case.
+    </p>
+	
+	<p>
+	  Now that type D of the Serializability Theorem allows us to discuss consistency fully down to the field level, does it have any advantage over its peer, say, type B of it? The discussion about logical groups certainly gives us an affirmative answer. In fact, there is one such example in the TPCC application: in the payment transaction, the field D_YTD is updated while in the new-order transaction, the field D_NEXT_O_ID is updated too; but there is no consistency related conflicts between these two transactions and these two updates don't introduce lock waits in the type D setting. A similar example can be given in the case that a read and a write on different fields are from different transactions as well.
+	</p>
+	
+  </div>
+  
 </div>
 
 <div id="section5">
 
-  <h2>5. History, issues and the possible future</h2>
+  <h2>5. Generic generalization of Serializable Snapshot Isolation to a distributed database system</h2>
+  
+  <h3>TODO</h3>
+</div>
+
+<div id="section6">
+
+  <h2>6. Field level capable locking system</h2>
+  
+  <h3>TODO</h3>
+</div>
+
+<div id="section7">
+
+  <h2>7. History, issues and the possible future</h2>
   
   <p>
     A lot of contents of this section about the future are guaranteed to be premature and hence it is subject to change in the future, so please read it with your discretion.
@@ -7030,8 +7550,8 @@ highly appreciated.
     As database application developers, we care more about which fields in the database are consistent and which fields may not be, which statements in a transaction or which transactions return consistent reads more than which transactions are serializable and hence the requirement that 'if this transaction reads consistent data from the database, it must write consistent data to it too' is satisfied. The Ramification Theorems deliver us exactly that. Therefore I'd like to advocate including them in the future version of the ANSI SQL standard too.
   </p>
   
-  <div id="section5.1">
-    <h3>5.1 Questions to be answered</h3>
+  <div id="section7.1">
+    <h3>7.1 Questions to be answered</h3>
 	
 	<p>
       Next let's explore a bit the questions haven't been answered in this article. I hope answers to them will help shape the future of the field of consistency.
@@ -7045,8 +7565,8 @@ highly appreciated.
       As a second-tier developer, I've never been a big fan of this 'optimistic technology ' approach. That is because if one assumes the role of a database application developer long enough, she/he will encounter the hot spot problem and need to handle it. So if one starts with 'optimistic technology', she/he will eventually have to take a look at 'pessimistic technology'. So why don't we start with the latter in the first place?
     </p>
 	
-	<div id="section5.1.1">
-      <h4>5.1.1 Question one</h4>
+	<div id="section7.1.1">
+      <h4>7.1.1 Question one</h4>
 	
 	  <p>
         As described in Appendix <a href="#appD">D</a>, Google's Spanner tries to retain all the advantages and to avoid all the disadvantages of 'optimistic technology' by sending only Read-Only transactions to a Snapshot Isolation component, while sending all the Read-Write transactions to a 2PL component, so that these two components merge to form the consistency implementation. This way, the hot spot problem is handled by 'pessimistic technology'. And the first question that hasn't been answered in this article is
@@ -7064,8 +7584,8 @@ highly appreciated.
 	  
 	</div>
 	
-	<div id="section5.1.2">
-      <h4>5.1.2 Question two</h4>
+	<div id="section7.1.2">
+      <h4>7.1.2 Question two</h4>
 
       <p>
         The second question is one that this article has been trying to answer.
@@ -7087,8 +7607,8 @@ highly appreciated.
 	  
 	</div>
 	
-	<div id="section5.1.3">
-      <h4>5.1.3 <span style="color:red">Free and paid service</span></h4>
+	<div id="section7.1.3">
+      <h4>7.1.3 <span style="color:red">Free and paid service</span></h4>
 	
 	  <p>
 	    I am currently working on a couple of papers in this series. After that I will find a place like a company which can offer me a MySQL Cluster to play with to do some testing, probably starting with the TPCC application, to see how this implementation works out. But unfortunately I don't know every database application in the world and can't test them one by one. That is why I try to push up this article in the MySQL Cluster forum and hope that the sophisticated MySQL Cluster developers here can help me out: apply this serializability implementation in your application when necessary and give me some feedback, so that we can improve it together.
@@ -7128,8 +7648,8 @@ highly appreciated.
 	
 	</div>
 	
-	<div id="section5.1.4">
-      <h4>5.1.4 Question three</h4>
+	<div id="section7.1.4">
+      <h4>7.1.4 Question three</h4>
 	  
 	  <p>
         If in the unfortunate case that after we implement a field level capable locking system and make sure our application is deployed in a memory-based system like MySQL Cluster, we still can't provide a satisfying answer to the second question, what should we do? Let's look at the following example.
@@ -7187,8 +7707,8 @@ highly appreciated.
 	
   </div>
   
-  <div id="section5.2">
-    <h3>5.2 Hot spot problem</h3>
+  <div id="section7.2">
+    <h3>7.2 Hot spot problem</h3>
 	
 	<p>
       While we are at the topic, let's explore the hot spot problem a little bit. We start with an example showing how bad it could be if 'optimistic technology' encountered the hot spot problem.
@@ -7324,8 +7844,8 @@ highly appreciated.
 	
   </div>
   
-  <div id="section5.3">
-    <h3>5.3 Security implications</h3>
+  <div id="section7.3">
+    <h3>7.3 Security implications</h3>
   
     <p>
       To round up this section, I'd like to discuss the security implications of consistency a little bit. At the beginning of this article, I mentioned the Flexcoin incident. Now let's see how to mount such an attack in a Read-Committed isolation level like that of MySQL Cluster's. According to <a href="#si14" >[Si 14]</a>, the transaction of transferring funds between accounts from Flexcoin contains something like the following SQL snippet(We've put back a check on newbalance that is skipped in <a href="#si14" >[Si 14]</a> before the write to it here for our purpose. The semantics will be slightly different from that in <a href="#si14" >[Si 14]</a>:
@@ -7867,7 +8387,7 @@ highly appreciated.
     </p>
 
     <p>
-      There are three cases. In the first case, all fields in the tuple are modified and we need to do nothing. In the second case, a tuple read happened before the write in the same statement like in 'update...set col=col+1'; in this case, the values naturally come from the tuple read. In the third case, it is a blind write like 'update table grades set grade=”A”'. In this article, we assume the following:
+      There are three cases. In the first case, all fields in the tuple are modified and we need to do nothing. In the second case, a tuple read 'happened before' the write in the same statement like in 'update...set col=col+1'; in this case, the values naturally come from the tuple read. In the third case, it is a blind write like 'update table grades set grade=”A”'. In this article, we assume the following:
     </p>
 
     <p>
@@ -8115,7 +8635,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  This partition-like implementation of Snapshot Isolation, however, imposes a major limitation to OceanBase: there is NO consistency support whatsoever for an application that consumes more than two million timestamps per second unless it can be partitioned into a lot of Tenants like an Amazon.com application. In other words, if consistency is important for such an application, you have to implement it at the second tier. Believe me, that usually implies heavy lifting! Google's Spanner uses a bunch of servers that are synchronized regularly to provide timestamp service and you can query any of them, so the limit should be that of the whole bunch and the danger for them to become saturated is less severe. And the method I develop for MySQL Cluster doesn't exhibit this kind of limitation at all since it doesn't require timestamps to achieve consistency. It seems to me OceanBase is designed for an application like Amazon.com and that is it; for other application types, it has to fit into a single Tenant. Such a design of course is suitable for a cloud environment since a tenant may not occupy a whole machine.
+	  This partition-like implementation of Snapshot Isolation, however, imposes a major limitation to OceanBase: there is NO consistency support whatsoever for an application that consumes more than two million timestamps per second unless it can be partitioned into a lot of Tenants like an Amazon.com application. In other words, if consistency is important for such an application, you have to implement it at the second tier. Believe me, that usually implies heavy lifting! Google's Spanner uses a bunch of servers that are synchronized regularly to provide timestamp service and you can query any of them, so the limit should be that of the whole bunch and the danger for them to become saturated is less severe. And the method I've developed for MySQL Cluster doesn't exhibit this kind of limitation at all since it doesn't require timestamps to achieve consistency. It seems to me OceanBase is designed for an application like Amazon.com and that is it; for other application types, it has to fit into a single Tenant. Such a design of course is suitable for a cloud environment since a tenant may not occupy a whole machine.
 	</p>
 	
 	<p>
