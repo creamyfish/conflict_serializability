@@ -1001,7 +1001,7 @@ tr:nth-child(even) {
     </p>
 
     <p>
-      Besides the committed versions, we also need to define an order for the internal versions of a data object inside a transaction in the case it is modified more than once. We've explained earlier before Example 1 that the execution of a transaction is a sequential process, namely, on a statement by statement basis. So assuming each statement doesn't update a data object twice, the order of these versions is obvious, for both tuple and field level versions.
+      Besides the committed versions, we also need to define an order for the internal versions of a data object inside a transaction in the case it is modified more than once. We've explained earlier before Example <a href="#example1">1</a> that the execution of a transaction is a sequential process, namely, on a statement by statement basis. So assuming each statement doesn't update a data object twice, the order of these versions is obvious, for both tuple and field level versions.
     </p>
 
     <p>
@@ -1449,7 +1449,7 @@ highly appreciated.
 	  <h4>Start of outer layer of induction</h4>
 	  
 	  <p>
-        We proceed with induction here. For convenience we use Ti' to denote Ti in Hs, for 0 < i < n+1. First let's prove T1 in H and T1' in Hs satisfy (i) in the definition of equivalent histories, namely, they give rise to the same set of database operations, corresponding predicate reads return the same set of tuples, corresponding item reads read the same version of data with same value, while corresponding writes write the same value to the same version of data for both internal and committed versions. From the discussion before Example 1, we know that a statement inside a transaction is either a regular programming language statement (like branching statements, loops, deterministic math calculations, non-deterministic math calculations) or a SQL statement. So actually, we'll prove a stronger result: besides the database operations, the regular programming language statement in T1 and T1' will have the same behavior since the corresponding variables will have the same value. For now, we assume any programming language statement or SQL statement in discussion does not involve any non-deterministic math calculations and will handle this exception later.
+        We proceed with induction here. For convenience we use Ti' to denote Ti in Hs, for 0 < i < n+1. First let's prove T1 in H and T1' in Hs satisfy (i) in the definition of equivalent histories, namely, they give rise to the same set of database operations, corresponding predicate reads return the same set of tuples, corresponding item reads read the same version of data with same value, while corresponding writes write the same value to the same version of data for both internal and committed versions. From the discussion before Example <a href="#example1">1</a>, we know that a statement inside a transaction is either a regular programming language statement (like branching statements, loops, deterministic math calculations, non-deterministic math calculations) or a SQL statement. So actually, we'll prove a stronger result: besides the database operations, the regular programming language statement in T1 and T1' will have the same behavior since the corresponding variables will have the same value. For now, we assume any programming language statement or SQL statement in discussion does not involve any non-deterministic math calculations and will handle this exception later.
       </p>
 	  
 	  <h4>Start of first inner layer of induction</h4>
@@ -1852,12 +1852,12 @@ highly appreciated.
       </p>
 	  
 	  <p>
-        Earlier we claimed that it's mostly Fekete's generalization(at least the way I understand it) that causes Example <a href="#example0">0</a> to surface. Now we see why: it failed to recognize the concept of a 'decision set' and its associated conflicts. In Adya's Serializability Theorem, this is not necessary since such a conflict will always be masked with a tuple WW one.
+        Earlier we claimed that it's mostly Fekete's generalization(at least the way I understand it) that causes Example <a href="#example0">0</a> to surface. Now we see why: it failed to recognize the concept of a 'decision set' and its associated conflicts. In Adya's Serializability Theorem, this is unnecessary since such a conflict will always be masked with a tuple WW one.
       </p>
 
-    <p>
-      Earlier we also mentioned that Example <a href="#example0">0</a> doesn't show up in PostgreSQL's serializability implementation since it views update of id2 in T2 and update of id3 in T1 as a WW conflict. This means the resolution of this specific conflict is at tuple level. So although Fekets's paper claims they have generalized Adya's work to field level and PostgreSQL depends on Fekete's paper,  PostgreSQL at best implements a hybrid system where conflicts are resolved at both field and tuple levels. Can a hybrid version of the Serializability Theorem be proved? We'll give an affirmative demonstration later. But the question that triggers Example <a href="#example0">0</a> remains unanswered: what exactly is the version of Serializability Theorem PostgreSQL thinks their serializability implementation relies on? It is up to PostgreSQL to clarify this of course.
-    </p>
+      <p>
+        Earlier we also mentioned that Example <a href="#example0">0</a> doesn't show up in PostgreSQL's serializability implementation since it views update of id2 in T2 and update of id3 in T1 as a WW conflict. This means the resolution of this specific conflict is at tuple level. So although Fekets's paper claims they have generalized Adya's work to field level and PostgreSQL depends on Fekete's paper,  PostgreSQL at best implements a hybrid system where conflicts are resolved at both field and tuple levels. Can a hybrid version of the Serializability Theorem be proved? We'll give an affirmative demonstration later. But the question that triggers Example <a href="#example0">0</a> remains unanswered: what exactly is the version of Serializability Theorem PostgreSQL thinks their serializability implementation relies on? It is up to PostgreSQL to clarify this of course.
+      </p>
 	  
 	  <pre><b>
 	                                                                                                       ## 
@@ -3653,7 +3653,7 @@ highly appreciated.
 	  </table>
 	  
 	  <p>
-        Let's take a closer look at the first possible conflict. For the statement that causes this conflict, the description in the TPCC specification says: the row in the ORDER table with matching O_W_ID(equals C_D_ID), O_D_ID(equals C_D_ID), O_C_ID(equals C_ID), and with the largest existing O_ID, is selected. In the transaction provided by TPCC, it uses the following statement to implement it in a cursor:
+        Let's take a closer look at the first possible conflict. For the statement that causes this conflict, the description of the order-status transaction in the TPCC specification says: the row in the ORDER table with matching O_W_ID(equals C_D_ID), O_D_ID(equals C_D_ID), O_C_ID(equals C_ID), and with the largest existing O_ID, is selected. In the transaction provided by TPCC, it uses the following statement to implement it in a cursor:
       </p>
 	  
 	  <pre><b>
@@ -5518,7 +5518,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <span style="color:red">Example 21 (Continuation...)</span>: Now let's have a look at the split statements in the TPCC application by examining those that are not. First, we can see that there is no predicate read whose 'decision set' intersects with Ram(B) from the conflict tables in Example 16. This not only implies all predicate reads are in the split to Ram(B)', but also means whether a statement is in the split completely depends on the fields accessed. Speaking of field access to Ram(B), for writes, we got insertions on: o_entry_d,  ol_delivery_d(NULL value) in the new-order transaction, h_date in the payment transaction and updates on: ol_delivery_d in a execution path of the delivery transaction, c_data in the payment transaction; for item reads, we got c_since, c_data in the payment transaction and o_entry_d, ol_delivery_d in the order-status transaction. The rest are all split statements of type I – V. Besides these, the select and update of c_data in the payment transaction are both type VI split statements. These are all the split statements.
+        <span style="color:red">Example 21 (Continuation...)</span>: Now let's have a look at the split statements in the TPCC application by examining those that are not. First, we can see that there is no predicate read whose 'decision set' intersects with Ram(B) from the conflict tables in Example <a href="#example16">16</a>. This not only implies all predicate reads are in the split to Ram(B)', but also means whether a statement is in the split completely depends on the fields accessed. Speaking of field access to Ram(B), for writes, we got insertions on: o_entry_d,  ol_delivery_d(NULL value) in the new-order transaction, h_date in the payment transaction and updates on: ol_delivery_d in a execution path of the delivery transaction, c_data in the payment transaction; for item reads, we got c_since, c_data in the payment transaction and o_entry_d, ol_delivery_d in the order-status transaction. The rest are all split statements of type I – V. Besides these, the select and update of c_data in the payment transaction are both type VI split statements. These are all the split statements.
       </p>
 
       <p>
@@ -7655,10 +7655,10 @@ highly appreciated.
         If in the unfortunate case that after we implement a field level capable locking system and make sure our application is deployed in a memory-based system like MySQL Cluster, we still can't provide a satisfying answer to the second question, what should we do? Let's look at the following example.
       </p>
 	
-	  <div class="example" id="example25">
+	  <div class="example" id="example27">
 	
 	    <p>
-          <b>Example 25</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in MySQL Cluster.
+          <b>Example 27</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in MySQL Cluster.
         </p>
 	  
 	    <pre><b>
@@ -7714,10 +7714,10 @@ highly appreciated.
       While we are at the topic, let's explore the hot spot problem a little bit. We start with an example showing how bad it could be if 'optimistic technology' encountered the hot spot problem.
     </p>
 	
-	<div class="example" id="example26">
+	<div class="example" id="example28">
 	
 	  <p>
-	    <b>Example 26</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
+	    <b>Example 28</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
 	  </p>
 	  
 	  <pre><b>
@@ -7793,7 +7793,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <b>Example 26(Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
+        <b>Example 28(Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
       </p>
 
       <p>
@@ -7827,7 +7827,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in Example 28, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
+      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in this example, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
     </p>
 	
 	<pre><b>
@@ -8043,7 +8043,7 @@ highly appreciated.
   </p>
   
   <p>
-    The former approach is purely syntactic. In the predicate RW conflict case, the analysis is completely based on Condition <a href="#conditionA" >A</a>; in the item RW conflict case, that the column read by a read and the column written by a write are the same doesn't necessarily mean the accesses happen on the same tuple. In many cases, the semantics of the application suggest that many possible conflicts in the syntactic approach's output are just false positive. This is demonstrated in Example 16 and many potential conflicts with 'not a conflict' in the comment are such cases. Identification of these bogus conflicts will certainly improve performance of your system since it will reduce memory footprint, CPU time and most importantly, lock waiting time. If you need my help on this in the free or paid service I am providing, make sure you describe your application's semantics as precise as possible. The TPCC specification provides a very good example to that end.
+    The former approach is purely syntactic. In the predicate RW conflict case, the analysis is completely based on Condition <a href="#conditionA" >A</a>; in the item RW conflict case, that the column read by a read and the column written by a write are the same doesn't necessarily mean the accesses happen on the same tuple. In many cases, the semantics of the application suggest that many possible conflicts in the syntactic approach's output are just false positive. This is demonstrated in Example <a href="#example16">16</a> and many potential conflicts with 'not a conflict' in the comment are such cases. Identification of these bogus conflicts will certainly improve performance of your system since it will reduce memory footprint, CPU time and most importantly, lock waiting time. If you need my help on this in the free or paid service I am providing, make sure you describe your application's semantics as precise as possible. The TPCC specification provides a very good example to that end.
   </p>
   
   <p>
@@ -8435,7 +8435,30 @@ highly appreciated.
     </p>
 	
 	<p>
-	  <b>Type D</b>: TODO
+	  <b>Type D</b>: Type D of the Serializability Theorem assumes a field version system as in Type C of the Serializability Theorem.
+	</p>
+	
+	<p>
+	  On top of it, we need a systematic way to define a 'decision set' version system so that the following requirements are met for type D of the Serializability Theorem.
+	</p>
+	
+	<ol>
+	  <li>
+	    A way to define the system.
+      </li>
+	  <li>
+	    A way to read the 'decision set' versions in a predicate read without mistakenly using an arbitrary set of field versions in the 'decision set' instead, so that predicate-based conflicts can be defined.
+      </li>
+	  <li>
+	    A way to read the 'decision set' versions for the initial internal version without mistakenly using an arbitrary set of field versions in the 'decision set' instead, so that successive internal versions and eventually the committed 'decision set' version can be defined.
+      </li>
+	  <li>
+	    And also a way to introduce item-based conflicts between reads and writes of 'decision set' versions so that we can reason about conflicts with them.
+      </li>
+	</ol>
+	
+	<p>
+	  Of course, it also requires a way to identify which field versions to read after a predicate read as in type C if item reads follow.
 	</p>
 	
 	<div class="definition">
@@ -8467,10 +8490,10 @@ highly appreciated.
       Next, let's demonstrate a weird Read-Committed isolation level to which we can't apply these theorems in the following example.
     </p>
 	
-	<div class="example" id="example27">
+	<div class="example" id="example29">
 	  
 	  <p>
-	    <b>Example 27</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
+	    <b>Example 29</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
       </p>
 	  
 	  <p>
