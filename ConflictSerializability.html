@@ -6,16 +6,20 @@
 body {
      font-family: Verdana, Sans-serif, Arial, 'Times New Roman';
 }
+
 div.example {
   background-color: #e6edff;
 }
+
 div.definition {
   background-color: #adff2f;
 }
+
 div.condition {
   background-color: #ffb6c1;
   margin: 5px;
 }
+
 div.theorem {
   border-width: 4px;
   border-style: solid;
@@ -23,6 +27,7 @@ div.theorem {
   margin: 5px;
   padding: 5px
 }
+
 div.proof {
   background-color: #ffffe0
   border-width: 1px;
@@ -30,9 +35,11 @@ div.proof {
   border-color: black;
   margin: 5px;
 }
+
 div.cite {
   margin: 5px;
 }
+
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
@@ -165,10 +172,61 @@ tr:nth-child(even) {
 	</dl>
   </dd>
   <dt>
-    <a href="#section5">5. Generic generalization of Serializable Snapshot Isolation to a distributed database system:TODO</a>
+    <a href="#section5">5. Generic generalization of Serializable Snapshot Isolation to a distributed database system</a>
   </dt>
+  <dd>
+    <dl>
+	  <dt>
+	    <a href="#section5.1">5.1 Making the generalization generic</a>
+	  </dt>
+	  <dt>
+	    <a href="#section5.2">5.2 List of distributed clocks satisfying the Clock Condition</a>
+	  </dt>
+	  <dd>
+	    <dl>
+		  <dt>
+	        <a href="#section5.2.1">5.2.1 HLC</a>
+	      </dt>
+          <dt>
+	        <a href="#section5.2.2">5.2.2 Lamport's logical clock</a>
+	      </dt>
+          <dt>
+	        <a href="#section5.2.3">5.2.3 An increasing sequence</a>
+	      </dt>
+          <dt>
+	        <a href="#section5.2.4">5.2.4 'Happened before'</a>
+	      </dt>	  
+		</dl>
+	  </dd>
+	  <dt>
+	    <a href="#section5.3">5.3 Alternatives for a field-based Snapshot Isolation implementation</a>
+	  </dt>
+	  <dd>
+	    <dl>
+		  <dt>
+	        <a href="#section5.3.1">5.3.1 Alternative one</a>
+	      </dt>
+          <dt>
+	        <a href="#section5.3.2">5.3.2 Alternative two</a>
+	      </dt>
+		</dl>
+	  </dd>
+	  <dt>
+	    <a href="#section5.4">5.4 Primary algorithm for the generalization</a>
+	  </dt>
+	  <dt>
+	    <a href="#section5.5">5.5 A flag system</a>
+	  </dt>
+	  <dt>
+	    <a href="#section5.6">5.6 False Positives</a>
+	  </dt>
+	  <dt>
+	    <a href="#section5.7">5.7 Summary and discussion</a>
+	  </dt>
+	</dl>
+  </dd>
   <dt>
-    <a href="#section6">6. Field level capable locking system:TODO</a>
+    <a href="#section6">6. Field level capable locking system and a hybrid system:TODO</a>
   </dt>
   <dt>
     <a href="#section7">7. History, issues and the possible future</a>
@@ -234,6 +292,9 @@ tr:nth-child(even) {
 	  </dt>
 	  <dt>
 	    <a href="#sectionD.3">D.3 CockroachDB</a>
+	  </dt>
+	  <dt>
+	    <a href="#sectionD.4">D.4 TiDB: TODO</a>
 	  </dt>
 	</dl>
   </dd> 
@@ -380,7 +441,7 @@ tr:nth-child(even) {
     <h3>1.1 Work in Adya's and Fekete's articles</h3>
 	
 	<p>
-      In Adya's paper, except for some insertion statements, every SQL statement is expressed as a predicate read followed by a number of regular reads and writes. The predicate read, which usually corresponds to the WHERE clause in a SQL statement, is an interpretation of the process of identifying which data objects we are to access. Interpreting such a process as a read is an important conceptual advance, because now we make it clear that a write can affect other SQL statements in two ways: affect the value of a data object that is to be read as usual, or affect whether a data object is selected for access.
+      In Adya's paper, except for some insertion statements, every SQL statement is expressed as a predicate read followed by a number of regular reads and writes. The predicate read, which corresponds to the WHERE clause in a SQL statement, is an interpretation of the process of identifying which data objects we are to access. Interpreting such a process as a read is an important conceptual advance, because now we make it clear that a write can affect other SQL statements in two ways: affect the value of a data object that is to be read as usual, or affect whether a data object is selected for access.
     </p>
 
     <p>
@@ -438,7 +499,7 @@ tr:nth-child(even) {
       </b></pre>
 	  
 	  <p>
-        Only the SQL statements that are useful for later conflict analysis are included here and those that don't are skipped for simplicity. The last SQL statement, for example, is actually surrounded by a bunch cursor related SQL statements like defining, opening a cursor and fetching rows in a cursor.
+        Only the SQL statements that are useful for later conflict analysis are included here and those that don't are skipped for simplicity. The last SQL statement, for example, is actually surrounded by a bunch of cursor related SQL statements like defining, opening a cursor and fetching rows in a cursor.
       </p>
 	  
 	  <pre><b>
@@ -877,7 +938,7 @@ tr:nth-child(even) {
 	<div class="example">
 	
 	  <p>
-        <b>Example <a href="#example0">0</a>(Continuation...)</b>: Adya's paper claims a history H that satisfies Conditions <a href="#condition1">1</a>-<a href="#condition4">4</a> and proscribes Conditions <a href="#condition5">5</a>-<a href="#condition6">6</a> is serializable if and only if it proscribes Condition <a href="#condition7">7</a>(We haven't defined a 'serializable history' mathematically, but one consequence is that it leaves the state of the database the same as a serial history. So we are getting ahead of ourselves here and we will fill in the blanks later). Example <a href="#example0">0</a>(the MySQL InnoDB part) has been shown to satisfy Conditions <a href="#condition1">1</a>-<a href="#condition3">3</a>. It certainly is a complete history and satisfies Condition <a href="#condition4">4</a>. It certainly proscribes Conditions <a href="#condition5">5</a>-<a href="#condition6">6</a> because the history is executed under the Read-Committed isolation level. Similar arguments can be applied to Fekete's generalization case(at least in the way I understand it) for everything except Condition <a href="#condition7">7</a>. So now it's time to analyze its DSG and see if there is a cycle inside.
+        <b>Example <a href="#example0">0</a> (Continuation...)</b>: Adya's paper claims a history H that satisfies Conditions <a href="#condition1">1</a>-<a href="#condition4">4</a> and proscribes Conditions <a href="#condition5">5</a>-<a href="#condition6">6</a> is serializable if and only if it proscribes Condition <a href="#condition7">7</a>(We haven't defined a 'serializable history' mathematically, but one consequence is that it leaves the state of the database the same as a serial history. So we are getting ahead of ourselves here and we will fill in the blanks later). Example <a href="#example0">0</a>(the MySQL InnoDB part) has been shown to satisfy Conditions <a href="#condition1">1</a>-<a href="#condition3">3</a>. It certainly is a complete history and satisfies Condition <a href="#condition4">4</a>. It certainly proscribes Conditions <a href="#condition5">5</a>-<a href="#condition6">6</a> because the history is executed under the Read-Committed isolation level. Similar arguments can be applied to Fekete's generalization case(at least in the way I understand it) for everything except Condition <a href="#condition7">7</a>. So now it's time to analyze its DSG and see if there is a cycle inside.
       </p>
 	  
 	  <p>
@@ -1108,7 +1169,7 @@ tr:nth-child(even) {
     </p>
 
     <p>
-      We assume that when a transaction reports back to the API coordinator its state as committed, all of its modifications are available for reading. This assumption is reasonable since distributed systems usually use two phase commit as their commit logic; in two phase commit a local component commits its modifications, hence ready for reading, before it sends the committed state back to the coordinator. For example, this assumption is satisfied by MySQL Cluster and one can see that when we explain the commit logic of MySQL Cluster in the next section.
+      We assume that when a transaction reports back to the API coordinator its state as committed, all of its modifications are available for reading. This assumption is reasonable since distributed systems usually use two phase commit as their commit logic; in two phase commit a local component commits its modifications, hence ready for reading, before it sends the committed state back to the coordinator. For example, this assumption is satisfied by MySQL Cluster and one can see that when we explain the commit logic of MySQL Cluster in next section.
     </p>
 
     <p>
@@ -1196,7 +1257,7 @@ tr:nth-child(even) {
 	<div class="example">
 	  
 	  <p>
-        <b>Example <a href="#example5">5</a>(Continuation...)</b>: If (id2, id3) turns out to be a 'decision set' of a predicate read, the second and third updates generate two derived 'decision set' versions, while the first and the fourth updates don't. If each update statement represents a transaction, these two derived 'decision set' versions are committed derived 'decision set' versions; if on the other hand, all four updates are in a transaction, these two derived 'decision set' versions are internal derived 'decision set' versions.
+        <b>Example <a href="#example5">5</a> (Continuation...)</b>: If (id2, id3) turns out to be a 'decision set' of a predicate read, the second and third updates generate two derived 'decision set' versions, while the first and the fourth updates don't. If each update statement represents a transaction, these two derived 'decision set' versions are committed derived 'decision set' versions; if on the other hand, all four updates are in a transaction, these two derived 'decision set' versions are internal derived 'decision set' versions.
       </p>
 	  
 	  <pre><b>
@@ -1848,7 +1909,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <b>Example <a href="#example0">0</a>(Continuation...)</b>: If we apply type B of the Serializability Theorem, a field level generalization of Adya's Serializability Theorem, to Example <a href="#example0">0</a>, a WW conflict from T2 to T1 on the 'decision set' consisting of fields {id2, id3} is identified. Since there is a conflict loop in this history, its inconsistent behavior is not a surprise now. On the other hand, if we apply type A of the Serializability Theorem, a modified version of Adya's Serializability Theorem, to Example <a href="#example0">0</a>, the conflict from T2 to T1 is a tuple WW one as before.
+        <b>Example <a href="#example0">0</a> (Continuation...)</b>: If we apply type B of the Serializability Theorem, a field level generalization of Adya's Serializability Theorem, to Example <a href="#example0">0</a>, a WW conflict from T2 to T1 on the 'decision set' consisting of fields {id2, id3} is identified. Since there is a conflict loop in this history, its inconsistent behavior is not a surprise now. On the other hand, if we apply type A of the Serializability Theorem, a modified version of Adya's Serializability Theorem, to Example <a href="#example0">0</a>, the conflict from T2 to T1 is a tuple WW one as before.
       </p>
 	  
 	  <p>
@@ -2006,7 +2067,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      We'll see how these theorems are applied to the TPCC benchmark example in the next section.
+      We'll see how these theorems are applied to the TPCC benchmark example in next section.
     </p>
 
     <p>
@@ -2030,7 +2091,7 @@ highly appreciated.
     </div>
 	
 	<p>
-	  MySQL InnoDB already comes with a serializability implementation, which is based on Two Phase Locking, or 2PL. One can actually use the Serializability Theorem we've proved to show that  2PL is really serializable(a short proof is given in Appendix <a href="#appB" >B</a>). But even then we may still do better for some application with our Serializability Theorem. That is because MySQL InnoDB's serializability implementation is of tuple level granularity and field level granularity implementation based on type B of the Serializability Theorem will have advantages over it for some workloads. However since MySQL InnoDB is not the focus of this article, I will leave it for the interested audience and they should be able to get some hint about how to apply it from the next section when we apply the Serializability Theorem to MySQL Cluster.
+	  MySQL InnoDB already comes with a serializability implementation, which is based on Two Phase Locking, or 2PL. One can actually use the Serializability Theorem we've proved to show that  2PL is really serializable(a short proof is given in Appendix <a href="#appB" >B</a>). But even then we may still do better for some application with our Serializability Theorem. That is because MySQL InnoDB's serializability implementation is of tuple level granularity and field level granularity implementation based on type B of the Serializability Theorem will have advantages over it for some workloads. However since MySQL InnoDB is not the focus of this article, I will leave it for the interested audience and they should be able to get some hint about how to apply it from next section when we apply the Serializability Theorem to MySQL Cluster.
     </p>
 	
 	<div class="theorem">
@@ -2040,7 +2101,7 @@ highly appreciated.
     </div>
 	
 	<p>
-      We will fill in the blanks for Corollary 3 in the next section.
+      We will fill in the blanks for Corollary 3 in next section.
     </p>
 	
 	<div class="theorem">
@@ -2050,7 +2111,7 @@ highly appreciated.
     </div>
 	
 	<p>
-      So we've proved three versions of the Serializability Theorem for three SQL implementations, PostgreSQL, MySQL InnoDB and MySQL Cluster, as we promised , thanks to the powerful framework set up by Adya's paper. If this was another research paper that is trying to prove a version of the Serializability Theorem, we already did it, for three times this time. But what we are looking for is a practical solution to the serializability problem that is useful for many, if not most, of the sophisticated database application developers. To this end, we are just at square one and a lot of work and testing are needed for that purpose. So in the next section, we will device a way to apply these theorems to MySQL Cluster so that histories executed within it will be serializable and start the journey. Join me in the quest when you feel ready!
+      So we've proved three versions of the Serializability Theorem for three SQL implementations, PostgreSQL, MySQL InnoDB and MySQL Cluster, as we promised , thanks to the powerful framework set up by Adya's paper. If this was another research paper that is trying to prove a version of the Serializability Theorem, we already did it, for three times this time. But what we are looking for is a practical solution to the serializability problem that is useful for many, if not most, of the sophisticated database application developers. To this end, we are just at square one and a lot of work and testing are needed for that purpose. So in next section, we will device a way to apply these theorems to MySQL Cluster so that histories executed within it will be serializable and start the journey. Join me in the quest when you feel ready!
     </p>
 	
   </div>
@@ -4536,7 +4597,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-      There is one issue though in the way we prevent the predicate-based RW conflicts in MySQL Cluster: we introduce new tables and possible access to them. Does this cause extra conflicts and require more prevention measures? It does introduce new conflicts. For example, inserting and deleting a row in such a table give rise to a WW conflict. It turns out it doesn't require more prevention measures. We will give a proof after we introduce the Ramification Theorem in the next section.
+      There is one issue though in the way we prevent the predicate RW conflicts in MySQL Cluster: we introduce new tables and possible access to them. Does this cause extra conflicts and require more prevention measures? It does introduce new conflicts. For example, inserting and deleting a row in such a table give rise to a WW conflict. It turns out it doesn't require more prevention measures. We will give a proof after we introduce the Ramification Theorem in next section.
     </p>
 	
   </div>
@@ -4642,7 +4703,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      To understand why this inconsistency would show up, we introduce a type of virtual transaction T and a virtual field named 'system time' into the database. What each transaction T does is to update 'system time' per time resolution of the system and commit. And the NOW() function is implemented as a select to this field. This way, there is an item-based RW conflict incident on 'system time' from T2 to T, for some T; and there is also an item-based WR conflict on this field from T to T1, for possibly another T(there could be a sequence of Ts in between which forms a sequence of WW conflicts in general). Hence a conflict loop is formed and the inconsistency is explained. Unfortunately, this won't help us much since T is virtual and we can't place prevention measures in it. One possible approach to handle this issue is to take the 'if we can't prevent it, we constrain it' approach and this idea leads to the Ramification Theorem.
+      To understand why this inconsistency would show up, we introduce a type of virtual transaction T and a virtual field named 'system time' into the database. What each transaction T does is to update 'system time' per time resolution of the system and commit. And the NOW() function is implemented as a select to this field. This way, there is an item RW conflict incident on 'system time' from T2 to T, for some T; and there is also an item-based WR conflict on this field from T to T1, for possibly another T(there could be a sequence of Ts in between which forms a sequence of WW conflicts in general). Hence a conflict loop is formed and the inconsistency is explained. Unfortunately, this won't help us much since T is virtual and we can't place prevention measures in it. One possible approach to handle this issue is to take the 'if we can't prevent it, we constrain it' approach and this idea leads to the Ramification Theorem.
     </p>
 
     <p>
@@ -5518,11 +5579,11 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <span style="color:red">Example 21 (Continuation...)</span>: Now let's have a look at the split statements in the TPCC application by examining those that are not. First, we can see that there is no predicate read whose 'decision set' intersects with Ram(B) from the conflict tables in Example <a href="#example16">16</a>. This not only implies all predicate reads are in the split to Ram(B)', but also means whether a statement is in the split completely depends on the fields accessed. Speaking of field access to Ram(B), for writes, we got insertions on: o_entry_d,  ol_delivery_d(NULL value) in the new-order transaction, h_date in the payment transaction and updates on: ol_delivery_d in a execution path of the delivery transaction, c_data in the payment transaction; for item reads, we got c_since, c_data in the payment transaction and o_entry_d, ol_delivery_d in the order-status transaction. The rest are all split statements of type I – V. Besides these, the select and update of c_data in the payment transaction are both type VI split statements. These are all the split statements.
+        <span style="color:red">Example <a href="#example21">21</a> (Continuation...)</span>: Now let's have a look at the split statements in the TPCC application by examining those that are not. First, we can see that there is no predicate read whose 'decision set' intersects with Ram(B) from the conflict tables in Example <a href="#example16">16</a>. This not only implies all predicate reads are in the split to Ram(B)', but also means whether a statement is in the split completely depends on the fields accessed. Speaking of field access to Ram(B), for writes, we got insertions on: o_entry_d,  ol_delivery_d(NULL value) in the new-order transaction, h_date in the payment transaction and updates on: ol_delivery_d in a execution path of the delivery transaction, c_data in the payment transaction; for item reads, we got c_since, c_data in the payment transaction and o_entry_d, ol_delivery_d in the order-status transaction. The rest are all split statements of type I – V. Besides these, the select and update of c_data in the payment transaction are both type VI split statements. These are all the split statements.
       </p>
 
       <p>
-        Also split statements in observation 4 don't exist since item reads of fields in Ram(B) are not used in any variable chain that ends in a branch or a process of identifying which data objects are to access. Hence case 1 of the Ramification Theorem applies here. This implies the prevention measures we've placed in the TPCC application guarantees consistency in Ram(B)', where Ram(B) = {c_since, c_data, h_date, o_entry_d, ol_delivery_d}. Actually, we've placed more than enough prevention measures there. We may remove prevention measures for item-based RW conflicts on field c_data in the p->p case and on field ol_delivery_d in the o->d2 case.
+        Also split statements in observation 4 don't exist since item reads of fields in Ram(B) are not used in any variable chain that ends in a branch or a process of identifying which data objects are to access. Hence case 1 of the Ramification Theorem applies here. This implies the prevention measures we've placed in the TPCC application guarantees consistency in Ram(B)', where Ram(B) = {c_since, c_data, h_date, o_entry_d, ol_delivery_d}. Actually, we've placed more than enough prevention measures there. We may remove prevention measures for item RW conflicts on field c_data in the p->p case and on field ol_delivery_d in the o->d2 case.
       </p>
 	  
 	  <pre><b>
@@ -5728,7 +5789,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <span style="color:red">Example 21 (Continuation...)</span>: Assuming C to be all the statements in the Read-Write transactions in the TPCC application, let's see what operations are in set R as in Generalized Serializability Theorem III and Ramification Theorem III. To do this, we need to trace the sequence described in Lemma <a href="#lemma1">1</a> reversely. In what follows, for each transaction, we will fill in more details(highlighted in brown color) about how variables are related as necessary.
+        <span style="color:red">Example <a href="#example21">21</a> (Continuation...)</span>: Assuming C to be all the statements in the Read-Write transactions in the TPCC application, let's see what operations are in set R as in Generalized Serializability Theorem III and Ramification Theorem III. To do this, we need to trace the sequence described in Lemma <a href="#lemma1">1</a> reversely. In what follows, for each transaction, we will fill in more details(highlighted in brown color) about how variables are related as necessary.
       </p>
 
       <pre><b>
@@ -5992,7 +6053,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <span style="color:red">Example 21 (Continuation...)</span>: Let's continue our analysis with the payment transaction.
+        <span style="color:red">Example <a href="#example21">21</a> (Continuation...)</span>: Let's continue our analysis with the payment transaction.
       </p>
 	  
 	  <pre><b>
@@ -6545,7 +6606,7 @@ highly appreciated.
 	<div class="example">
 	
 	  <p>
-        <span style="color:red">Example 21 (Continuation...)</span>: Let's summarize this example by comparing it with the execution of the TPCC application under Snapshot Isolation. Fekete's paper indicates that the TPCC application is serializable under Snapshot Isolation, at least on Ram(B)' of course. Under the Read-Committed isolation level of MySQL Cluster, Ramification Theorem I indicates that the split of the Read-Write transactions to Ram(B)' is serializable, with read locks placed in the p->p and n->n cases to fence off those RW conflicts, while any single field read in Ram(B)' in the Read-Only transactions doesn't demonstrate inconsistency. 
+        <span style="color:red">Example <a href="#example21">21</a> (Continuation...)</span>: Let's summarize this example by comparing it with the execution of the TPCC application under Snapshot Isolation. Fekete's paper indicates that the TPCC application is serializable under Snapshot Isolation, at least on Ram(B)' of course. Under the Read-Committed isolation level of MySQL Cluster, Ramification Theorem I indicates that the split of the Read-Write transactions to Ram(B)' is serializable, with read locks placed in the p->p and n->n cases to fence off those RW conflicts, while any single field read in Ram(B)' in the Read-Only transactions doesn't demonstrate inconsistency. 
       </p>
 	  
 	  <p>
@@ -6730,7 +6791,7 @@ highly appreciated.
 	</b></pre>
 	
 	<p>
-      After we find out that there is no update on the fields involved in these two selects, we may safely combine them back into the original join statement. This way we can take advantage of the 'push down join' algorithm of MySQL Cluster and achieve higher performance.
+      After we find out that there is no update on the 'decision set's involved in these two selects, we may safely combine them back into the original join statement. This way we can take advantage of the 'push down join' algorithm of MySQL Cluster and achieve higher performance.
     </p>
 
     <p>
@@ -6784,7 +6845,7 @@ highly appreciated.
 	</b></pre>
 	
 	<p>
-      If we were to use granular locking to prevent the possible predicate-based RW conflict in this case, it will look like the following since the update is upon s_quantity:
+      If we were to use granular locking to prevent the possible predicate RW conflict in this case, it will look like the following since the update is upon s_quantity:
     </p>
 	
 	<pre><b>
@@ -6799,7 +6860,7 @@ highly appreciated.
     </p>
 	
 	<p>
-      The key observation here is that prevention measure depends on the execution plan. We will see this more clearly if the update is upon a field involved in the join condition in the second join. For example, what happens if the update is on s_i_id? In the first execution plan, this gives rise to a  predicate-based RW conflict; in the second execution plan, a item-based RW conflict results. Right now, we use different conflict resolution measures for them. This implies we can't be sure what to use until the execution plan is resolved. In this Ad-Hoc solution in the second tier for MySQL Cluster, we have to break the join down into a specific execution plan a priori to be sure about this. This means we can't take advantage of the 'push down join' algorithm of MySQL Cluster any more. One possible solution is to give the optimizer a hint about which execution plan to choose(it might require new SQL syntax). With a capable system like MySQL Cluster, there is the following technical path: complicated joins usually show up in OLAP loads, not OLTP ones, so it is probably OK to just break down the simple ones as we did without worrying the 'push down join' algorithm; in the case the load shows both OLAP and OLTP characteristics and the OLAP part is a set of selects, we may try to isolate the OLAP part and service it from a replication server, leaving the OLTP part to the primary cluster(we need to pray that a complicated multi-table update or delete would not be present).
+      The key observation here is that prevention measure depends on the execution plan. We will see this more clearly if the update is upon a field involved in the join condition in the second join. For example, what happens if the update is on s_i_id? In the first execution plan, this gives rise to a predicate RW conflict; in the second execution plan, an item RW conflict results. Right now, we use different conflict resolution measures for them. This implies we can't be sure what to use until the execution plan is resolved. In this Ad-Hoc solution in the second tier for MySQL Cluster, we have to break the join down into a specific execution plan a priori to be sure about this. This means we can't take advantage of the 'push down join' algorithm of MySQL Cluster any more. One possible solution is to give the optimizer a hint about which execution plan to choose(it might require new SQL syntax). With a capable system like MySQL Cluster, there is the following technical path: complicated joins usually show up in OLAP loads, not OLTP ones, so it is probably OK to just break down the simple ones as we did without worrying the 'push down join' algorithm; in the case the load shows both OLAP and OLTP characteristics and the OLAP part is a set of selects, we may try to isolate the OLAP part and service it from a replication server, leaving the OLTP part to the primary cluster(we need to pray that a complicated multi-table update or delete would not be present).
     </p>
 
     <p>
@@ -6832,7 +6893,7 @@ highly appreciated.
     </p>
 	
 	<p>
-	  MySQL Cluster uses neighborhood Write Ahead Logging or nWAL to provide high availability in case of node failure. Namely, a write is written to all replicas in a node group before it is published to an API node, like a mysqld server, as committed. And before a tuple is written, an entry is written in the REDO log to record this write event. The REDO log at each node is flushed to disk every second. In this case a node fails, the NDB kernel just use the rest of the node group to continue providing service since everything there is the same as in the failed one. In the case the whole node group or the whole system fails, the REDO log is used to restore the system to a consistent state. The question is: is the term 'consistent' used by MySQL Cluster here means the same thing as consistency in this article would have implied?
+	  MySQL Cluster uses neighborhood-Write-Ahead-Logging or nWAL to provide high availability in case of node failure. Namely, a write is written to all replicas in a node group before it is published to an API node, like a mysqld server, as committed. And before a tuple is written, an entry is written in the REDO log to record this write event. The REDO log at each node is flushed to disk every second. In this case a node fails, the NDB kernel just use the rest of the node group to continue providing service since everything there is the same as in the failed one. In the case the whole node group or the whole system fails, the REDO log is used to restore the system to a consistent state. The question is: does the term 'consistent' used by MySQL Cluster here mean the same thing as consistency in this article would have implied?
 	</p>
 	
 	<p>
@@ -6956,15 +7017,15 @@ highly appreciated.
     <h3>4.1 Isolation levels for a field-based database system</h3>
   
     <div class="definition">
-      <b>Snapshot Isolation</b>: Item reads and predicate reads are still based on the snapshot corresponding to the starting time of the transaction. Conflict caused by writes of two concurrent transactions, however, only exists if the intersection of the write sets of these two transactions is not empty. Timestamps are assigned to writes as usual.
+      <b>Snapshot Isolation</b>: Item reads and predicate reads are still based on the snapshot corresponding to the starting time of the transaction. Two transactions writing the same tuple, however, can be concurrent unless the intersection of the write sets of these two transactions is not empty or they are writing the same 'decision set'. Timestamps are assigned to writes as usual.
     </div>
   
     <p>
-      For a distributed database system, since we can't synchronize clocks to 100% accuracy by <a href="#la78" >[La 78]</a>, we must provide a new way to generate the timestamps. For example, Google's Spanner comes with a way to implement Snapshot Isolation without synchronizing clocks accurately, which is described in Appendix <a href="#appD" >D</a>. More example will be given in the next section.
+      In particular, this definition implies transactions updating different fields in the same tuple can be executed concurrently. And it also imposes a total order on field versions of a field or 'decision set' versions of a 'decision set'. For a distributed database system, since we can't synchronize clocks to 100% accuracy by <a href="#la78" >[La 78]</a>, we must provide a new way to generate the timestamps. For example, Google's Spanner comes with a way to implement Snapshot Isolation without synchronizing clocks accurately, which is described in Appendix <a href="#appD" >D</a>. More example will be given in next section.
     </p>
 
     <p>
-      Also to facilitate such a Snapshot Isolation implementation for a field-based system, we need to associate each field a timestamp, instead of one for each tuple. This will increase storage footprint. However, there are usually large amount of memory and disk space in modern servers. And a distributed database system can also be scaled horizontally. This should not be a problem in general.
+      Also to facilitate such a Snapshot Isolation implementation for a field-based system, we need to associate each field version with a timestamp, instead of one for each tuple version. This will increase storage footprint in general. However, there are usually large amount of memory and disk space in modern servers. And a distributed database system can also be scaled horizontally. This should not be a problem.
     </p>
   
     <div class="definition">
@@ -7008,7 +7069,7 @@ highly appreciated.
 	  </b></pre>
 	
 	  <p>
-        The first select statement of course returns the two tuples to start with, while the second select statement returns the following two tuples: (1,1,3,10), (3,5,5,10). So when T1 updates a tuple in it, it reads the most recently committed tuple version and applies the update to this version; otherwise it reads only the versions before the time T1 starts. In other words, T1 behaves like in the Read-Committed isolation level for the first tuple and like in Snapshot Isolation for the second. This, however, doesn't violate the Repeatable-Read isolation level definition in the SQL standard since it still refutes the anomalies proscribed in that definition. Notice there is a conflict loop in this history since there is an item-based RW conflict from T1 to T2 and there is an item-based WR conflict from T2 to T1 on the id2 field of the first tuple. Actually if this history was serializable, the order had to be {T1, T2} since the first select in T1 read the original state. But the the second select in T1 should've read (1,2,3,10) for the first tuple. That is a contradiction since type B of the Serializability Theorem applies here.
+        The first select statement of course returns the two tuples to start with, while the second select statement returns the following two tuples: (1,1,3,10), (3,5,5,10). So when T1 updates a tuple in it, it reads the most recently committed tuple version and applies the update to this version; otherwise it reads only the versions before the time T1 starts. In other words, T1 behaves like in the Read-Committed isolation level for the first tuple and like in Snapshot Isolation for the second. This, however, doesn't violate the Repeatable-Read isolation level definition in the SQL standard since it still refutes the anomalies proscribed in that definition. Notice there is a conflict loop in this history since there is an item RW conflict from T1 to T2 and there is an item-based WR conflict from T2 to T1 on the id2 field of the first tuple. Actually if this history was serializable, the order had to be {T1, T2} since the first select in T1 read the original state. But the the second select in T1 should've read (1,2,3,10) for the first tuple. That is a contradiction since type B of the Serializability Theorem applies here.
       </p>
 	
 	  <pre><b>
@@ -7065,7 +7126,7 @@ highly appreciated.
     <div class="example">
 	
       <p>
-	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: Under this newly defined Repeatable-Read isolation level, the same execution will give a different result. In particular. the second select in T1 should return (1,2,3,10) for the first tuple and (3,5,5,10) for the second one. In other words, for the first tuple, T1 sees the update to id3 by T1, but not the update to id2 by T2 since everything is interpreted at field level now and T1 is NOT updating id2. Because there is no conflict loop in this history, it is serializable by type C of the Serializability Theorem. And the order of serialization is, of course, {T1, T2}. This is just another example that we should use a field-based system since it leads to less conflicts in general. 
+	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: Under this newly defined Repeatable-Read isolation level, the same execution will give a different result. In particular. the second select in T1 should return (1,2,3,10) for the first tuple and (3,5,5,10) for the second one. In other words, for the first tuple, T1 sees the update to id3 by T1, but not the update to id2 by T2 since everything is interpreted at field level now and T1 is NOT updating id2. Because there is no conflict loop in this history, it is serializable by type C of the Serializability Theorem. And the order of serialization is, of course, {T1, T2}. This is just another example that we should use a field-based system since it leads to less conflicts in general. 
 	  </p>
 	
 	  <p>
@@ -7147,7 +7208,7 @@ highly appreciated.
 	
 	<div class="example">
       <p>
-	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: If we replace the second select in T1 in the original history with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level, the first tuple will be a match for this predicate read because the reading of the initial internal 'decision set' version sees the update in T2(say, we use id2 as the specific field). And a conflict loop exists in the execution since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on the 'decision set' {id2, id3} of the first tuple.
+	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: If we replace the second select in T1 in the original history with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level, the first tuple will be a match for this predicate read because the reading of the initial internal 'decision set' version sees the update in T2(say, we use id2 as the specific field). And a conflict loop exists in the execution since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on the 'decision set' {id2, id3} of the first tuple.
 	  </p>
 	  
 	  <pre><b>
@@ -7287,7 +7348,7 @@ highly appreciated.
 	
 	<div class="example">
       <p>
-	    <b>Example <a href="#example25">25</a>(Continuation...)</b>: If we replace the second select in T1 with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level and this time the 'decision set' version system is not introduced with the help of a specific field, an item-based WW and an item-based WR conflict from T2 to T1 on 'decision set' {id2, id3} of the first tuple exist to form a conflict loop.
+	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: If we replace the second select in T1 with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level and this time the 'decision set' version system is not introduced with the help of a specific field, an item-based WW and an item-based WR conflict from T2 to T1 on 'decision set' {id2, id3} of the first tuple exist to form a conflict loop.
 	  </p>
 	  
 	  <pre><b>
@@ -7297,7 +7358,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      All the Generalized Serializability Theorems and Ramification theorems are also true for type D's setting. The proofs are similar to those for Generalized Serializability Theorems and Ramification theorems for type B, except this time the 'decision set' is not derived.
+      All the Generalized Serializability Theorems and Ramification theorems are also true for type D's setting. The proofs are similar to those for Generalized Serializability Theorems and Ramification theorems for type B, except this time the 'decision set' is not necessarily derived.
     </p>
 	
   </div>
@@ -7436,12 +7497,1068 @@ highly appreciated.
 
   <h2>5. Generic generalization of Serializable Snapshot Isolation to a distributed database system</h2>
   
-  <h3>TODO</h3>
+  <p>
+    When I started this work, there were only two serializability implementations: 2PL like that of MySQL InnoDB's and PostgreSQL's Serializable Snapshot Isolation. And it's been a dream to generalize both to a distributed database system so that we can solve larger problems. I've successfully mounted a lock-based serializability implementation to MySQL Cluster in Section <a href="#section2" >2</a> & <a href="#section3" >3</a>, with the framework developed in Section <a href="#section1" >1</a>. One major difficulty of generalizing 2PL is its thrashing behavior under heavy load. I address this with the Generalized Serializability Theorems and provide a partial solution to it: it works only if consistencies of enough reads can be sacrificed. It is still a good trade-off since these inconsistencies are only transient and it is safe as long as one doesn't take action when they are spotted.
+  </p>
+  
+  <p>
+    Since the framework in this article works on a generic Read-Committed isolation level, including Snapshot Isolation for a field-based system we've developed in Section <a href="#section4" >4</a>, this makes the other part of the dream possible. The major difficulty of this generalization is to develop a distributed clock for the system. In this section, I'll explore a so-called 'Clock Condition' to make the key arguments in <a href="#fe05" >[Fe 05]</a> go through, so that we'll actually have various Serializable Snapshot Isolation implementations with differing distributed clocks. This is what 'generic' means in the title of this section.
+  </p>
+  
+  <div id="section5.1">
+    <h3>5.1 Making the generalization generic</h3>
+	
+	<p>
+      The following discussion is basically that of <a href="#fe05" >[Fe 05]</a> between Remark 2.1 and Theorem 2.1, with two major differences.
+    </p>
+  
+    <p>
+      The first one is that we assume the distributed clock, whose reading designated as t.e for event e, satisfies the following:
+    </p>
+  
+    <pre><b>
+        <span style="color:red">Clock Condition</span>: e “happened before” f => t.e < t.f,                                                                                        
+	</b></pre>
+  
+    <p>
+      where the inequality is from a total order.
+    </p>
+  
+    <p>
+      Remark: I came across the Clock Condition in Lamport's classic paper (<a href="#la78" >[La 78]</a>) about distributed clock. It was for the logical clock defined there only. I extend the idea here for a generic distributed clock. In the Clock Condition, we use “happened before” instead of 'happened before' as the rest of this article does. This “happened before” partial order is for events designated as points in time, not as an interval as in the 'happened before' partial order, so that we may associate a timestamp to each event. This way of capturing the temporal order in a reference frame is discussed in detail in Appendix <a href="#appB" >B</a> and the subsection about CockroachDB in Appendix <a href="#appD" >D</a>: events inside a thread are represented as a sequence of points in time and two events connected by an inter-thread message is interpreted as a type II edge. And this potential mixed usage of “happened before” and 'happened before' is OK since 'happened before' is only used in type D of the Serializability Theorem to assert that a non-serializable history contains a cycle in the proof of Theorem 2.1 below. After that, “happened before” is used for the rest of the arguments.
+    </p>
+  
+    <p>
+      The second one is that we assume t.e could be equal to t.f for two different events e and f. In a standalone system, we can usually arrange the timestamp service to return an increasing sequence so that t.e is not equal to t. f, if e and f are not the same. In a distributed system, however, the distributed clock usually can't fulfill such a requirement. We must cope with it.
+    </p>
+  
+    <p>
+      With the second assumption, we need to define two concurrent transactions T1 and T2 to be: timestamp of T1's start <= timestamp of T2's commit and timestamp of T1's commit >=  timestamp of T2's start; in the case the timestamp service returns an increasing sequence, it is always safe to use the strict inequality signs '<' and '>'.
+    </p>
+  
+    <p>
+      For a WR conflict from T1 to T2, we know that timestamp of T1's commit <  timestamp of T2's start from the definition of Snapshot Isolation. So if there is a WR conflict between T1 and T2, timestamp of T1's start < timestamp of T1's commit(Clock Condition) < timestamp of T2's start  < timestamp of T2's commit(Clock Condition). 
+    </p>
+  
+    <p>
+      If the conflict between T1 and T2 is a WW one, by First-Committer-Wins rule or First-Updater-Wins rule, we have timestamp of T1's start < timestamp of T1's commit(Clock Condition) < timestamp of T2's start < timestamp of T2's commit(Clock Condition). Notice the second inequality can't be the other way around(timestamp of T2's commit < timestamp of T1's start) since then we would have the following timestamp loop: timestamp of T2's commit < timestamp of T1's start < timestamp of T1's conflicting write < timestamp of T2's conflicting write < timestamp of T2's commit by the Clock Condition.
+    </p>
+  
+    <p>
+      If there is a RW conflict between T1 and T2, it is possible for T1 to completely precede T2 or for T1 and T2 be concurrent since T2 completely precedes T1 would result in T1 being able to read T2's write, which contradicts with the definition of a RW conflict. But in either case, we have timestamp of T1's start <= timestamp of T2's commit. We've just proved the following Lemma 2.2 in <a href="#fe05" >[Fe 05]</a> with a distributed clock satisfying the Clock Condition.
+    </p>
+  
+    <div class="theorem" id="lemma2.2">
+	
+	  <b>Lemma 2.2 in <a href="#fe05" >[Fe 05]</a></b>: In a history executed under Snapshot Isolation, if there is a conflict between T1 and T2, then timestamp of T1's start <= timestamp of T2's commit.
+	  
+	</div>
+	
+    <p>
+      From the discussion above, the following Lemma 2.3 in <a href="#fe05" >[Fe 05]</a> is also clear.
+    </p>
+	
+	<div class="theorem" id="lemma2.3">
+	
+	  <b>Lemma 2.3 in <a href="#fe05" >[Fe 05]</a></b>: In a history executed under Snapshot Isolation, if we know that there is a conflict from T1 to T2, and that T1 and T2 are concurrent, we can conclude that it must be a RW conflict.
+	  
+	</div>
+  
+    <p>
+      Now we are ready for the proof of the major theorem in <a href="#fe05" >[Fe 05]</a>, with a distributed clock satisfying the Clock Condition this time.
+    </p>
+	
+	<div class="theorem" id="theorem2.1">
+	
+	  <b>Theorem 2.1 in <a href="#fe05" >[Fe 05]</a></b>: Suppose H is a multi-version history produced under Snapshot Isolation that is not serializable. Then there is at least one cycle in the serialization graph DSG(H) and we claim that in every cycle there are three consecutive transactions T1, T2, T3(where it is possible that T1 and T3 are the same transaction) such that T1 and T2 are concurrent and T2 and T3 are concurrent.
+	  
+	</div>
+	
+	<div class="proof">
+	
+	  <p>
+        Proof: The existence of such a cycle is asserted by type D of the Serializability Theorem. Take an arbitrary cycle in DSG(H), and let T3 be the transaction in the cycle with the earliest commit time; let T2 be the predecessor of T3 in the cycle, and let T1 be the predecessor of T2 in the cycle. Suppose for the sake of contradiction that T2 and T3 are not concurrent; then either timestamp of T2's commit < timestamp of T3's start(but then this is before timestamp of T3's commit by the Clock Condition, contradicting with the choice of T3 as the earliest committed transaction in the cycle), or timestamp of T3's commit < timestamp of T2's start(but this contradicts with the presence of an edge from T2 to T3 by Lemma 2.2). Thus we've shown that T2 must be concurrent with T3. Hence timestamp of T2's start <= timestamp of T3's commit and timestamp of T3's start <=  timestamp of T2's commit.
+      </p>
+  
+      <p>
+        Now suppose for the sake of contradiction that T1 was not concurrent with T2. Then either timestamp of T1's commit < timestamp of T2's start(<= timestamp of T3's commit by the last sentence of the prior paragraph, contradicting with the choice of T3 as earliest committed transaction in the cycle), or timestamp of T2's commit < timestamp of T1's start(contradicting with the presence of an edge from T1 to T2 by Lemma 2.2). Thus we've shown that T1 must be concurrent with T2.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	
+	</div>
+  
+    <p>
+      So as long as a distributed clock satisfies the Clock Condition, we may apply Theorem 2.1 in <a href="#fe05" >[Fe 05]</a> to an application executed under the Snapshot Isolation defined with this distributed clock. In particular, this implies we may apply Cahill's work (<a href="#ca08" >[Ca 08]</a>) to it to achieve serializability.
+    </p>
+  
+  </div>
+  
+  <div id="section5.2">
+    <h3>5.2 List of distributed clocks satisfying the Clock Condition</h3>
+  
+    <p>
+      We'll discuss a few distributed clock candidates satisfying the Clock Condition here, hoping that it will help you choose one for your specific implementation of Serializable Snapshot Isolation in a distributed database system.
+    </p>
+	
+    <div id="section5.2.1">
+      <h4>5.2.1 HLC</h4>
+	  
+	  <p>
+        The fact that HLC satisfies the Clock Condition is demonstrated in Appendix <a href="#appD" >D</a> when we survey CockroachDB.
+      </p>
+	  
+	</div>
+	
+	<div id="section5.2.2">
+      <h4>5.2.2 Lamport's logical clock</h4>
+	  
+	  <p>
+        The following algorithm is one way to implement the logical clock proposed by Lamport in <a href="#la78" >[La 78]</a>.
+	  </p>
+	  
+	  <pre><b>
+        Initially l.j := 0
+
+        <span style="color:red">Send or local event</span>
+          l.j := l.j + 1
+          Timestamp with l.j
+
+        <span style="color:red">Receive event of message m</span>
+          l.j := max(l.j+1, l.m+1)
+          Timestamp with l.j, c.j
+                                                                                               
+	  </b></pre>
+	  
+	  <p>
+        Here sub-script j represents an arbitrary process participating in this clock protocol, sub-script m represents the process from which the message(also represented as m) is sent. As we can see, this is the skeleton of the logical part in HLC and it satisfies the Clock Condition. This is for the single-threaded scenario in the good old days.
+      </p>
+  
+      <p>
+        For today's multi-threaded scenario, the variant where events inside a thread are represented as points in time and two events connected by an inter-thread message is interpreted as a type II edge as described in Appendix <a href="#appB" >B</a> and the section about CockroachDB in Appendix <a href="#appD" >D</a> should be used. The fact that it also satisfies the Clock Condition is similar to the single-threaded case.
+      </p>
+  
+      <p>
+        The advantage of a logical clock like Lamport's is the absence of a physical clock. <a href="#ki13" >[Ki 13]</a> discusses some of the caveats of a physical clock and CockroachDB's approach described in Appendix <a href="#appD" >D</a> can mask most of them.
+      </p>
+  
+      <p>
+        The disadvantage of a logical clock like Lamport's is also the absence of a physical clock. Let's demonstrate this with an example. For simplicity, we consider a distributed database system with only one thread – the transaction coordinator(TC) – in each node, which implements a Snapshot Isolation with Lamport's logical clock providing the timestamp service. Now suppose the system is busy, but one of the transaction coordinators, say TC1, somehow hasn't been assigned any transaction and it hasn't communicated with other TCs(say, none of them reads and writes the data in the node where TC1 resides) for a period of time. The consequence is that TC1's timestamps will lag behind its peers since Lamport's clock only advances with local events and messages received and it is lacking both. So if now TC1 starts a transaction with timestamp 20 assigned to its start event while its peers already advance their timestamps to be over 2000, then these TCs must retain at least all versions created between timestamp 19 and 2000 since TC1's reads might need them. This could impose pressure on the versioning system since it takes too long for versions to become outdated and it might run out of space. In a system where a physical clock plays a major role in the distributed clock like in HLC, this example may not show up as long as the physical clock is relatively accurate. 
+      </p>
+	  
+	  <p>
+        Such an example is, of course, at best contrived. That is because it need to take advantage of an extreme design principle to surface: the set of events timestamped should be minimized so that the timestamp service is not stressed. One way to resolve this issue is to set up a heartbeat mechanism and timestamp the heartbeat messages. Another alternative is to timestamp the garbage collection messages. Either way, the timestamps of all threads will be synced to close proximity and versions will become outdated and garbage collected in time. Nonetheless, this example still alerts us that care must be taken if we were to use Lamport's clock in our implementation.
+      </p>
+	  
+	</div>
+	
+	<div id="section5.2.3">
+      <h4>5.2.3 An increasing sequence</h4>
+	  
+	  <p>
+        In Appendix <a href="#appD" >D</a>, we can see that OceanBase uses an increasing sequence as a clock to service each tenant, the name of a Paxos group in OceanBase's nomenclature. Although a tenant could still be distributed in multiple nodes, it may only be a tiny part of an OceanBase cluster. There is no chance for this maximum 2M timestamp/s service to satisfy all the needs for a global Snapshot Isolation implementation for a large cluster. OceanBase has to take a step back by using one thread to generate such a service for each tenant, which results in a Snapshot Isolation implementation per tenant. Standalone Snapshot Isolation implementations like those in Oracle, Microsoft SQL Server, etc. use physical clocks to provide timestamp service. A physical clock is practically an increasing sequence if it always ticks forward(or that we make it to appear so). 
+	  </p>
+	  
+	  <p>
+        An increasing sequence as a timestamp service satisfies the Clock Condition, of course. But a generalization of it to a distributed system may not be. This is demonstrated in Appendix <a href="#appD" >D</a> when we discuss TiDB.
+      </p>
+  
+	</div>
+	
+	<div id="section5.2.4">
+      <h4>5.2.4 'Happened before'</h4>
+	  
+	  <p>
+        If you feel uncomfortable using more than one way to interpret the temporal order in a distributed system, there is the following work-around to just use the 'happened before' partial order as in the rest of this article. To allow the “happened before” partial order in the Clock Condition to be the 'happened before' partial order, the right-hand side of the Clock Condition can be changed to End(e) < Begin(f). Then all the arguments in the last subsection can go through if we use End(e) as the timestamp of e, for each event e. Notice that as described in Appendix <a href="#appB" >B</a>, those arguments are still correct even if the Monotonicity Condition is violated by the physical clock from which End(e) is timestamped, because all the events in the arguments are carefully chosen.
+      </p>
+	  
+	  <p>
+        Although in principle we may use physical clocks in the participating nodes as a distributed timestamp service for a Snapshot Isolation implementation, it is not recommended. From the  discussion of CockroachDB in Appendix <a href="#appD" >D</a>, we know that there are caveats(<a href="#ki13" >[Ki 13]</a>) with such a service. Without something like the logical part of HLC to mask them, we have to deal with them one by one. And that really opens a can of worms.
+      </p>
+	  
+	</div>
+  
+  </div>
+  
+  <div id="section5.3">
+    <h3>5.3 Alternatives for a field-based Snapshot Isolation implementation</h3>
+	
+	<p>
+      In Section <a href="#section4" >4</a>, we've shown that type D of the Serializability Theorem can be applied to a field-based Snapshot Isolation level to conclude serializability if an application is free of conflict loops. Let's see how such a field-based Snapshot Isolation level can be implemented here. We'll explore two alternatives next. The first one will be designed so that the cost of adapting a current tuple-based Snapshot Isolation implementation to become a field-based one is minimized. The second one is optimized so that storage footprint of the database is minimized.
+    </p>
+	
+	<div id="section5.3.1">
+      <h4>5.3.1 Alternative one</h4>
+  
+      <p>
+        In this alternative, we assume a tuple-based Snapshot Isolation implementation in a distributed system is already in place. So let's first explore how to implement such a system.
+      </p>
+  
+      <p>
+        We start by looking at how to implement tuple-based Snapshot Isolation in a standalone system. A typical implementation of such a system works like this: a transaction T starts with a start timestamp ts and performs reads based on the snapshot defined by ts; writes are cached locally until commit logic starts; Two-Phase-Commit starts the query phase by pre-writing the cached writes to its destination, First-Committer-Wins rule is used to detect write conflicts and a participant responds with a 'no' if T is chosen to be aborted by this rule; if all participants respond with a 'yes' to the query, the commit phase is started with a commit timestamp tc for the participants to finalize the writes; otherwise T is rolled back. Alternatively, if First-Updater-Wins rule is used to detect write conflicts, writes will not be cached till commit; instead, locks will be requested and writes will be performed once they are acquired.
+      </p>
+  
+      <p>
+        Remark: Although First-Committer-Wins rule and First-Updater-Wins rule are considered to be equivalent since they both roll back one transaction among two conflicting ones, today's commercial databases usually use First-Updater-Wins rule to detect write conflicts because NOT waiting until commit to make the abortion decision will avoid performing unnecessary operations. Unfortunately, it requires a field level capable locking system if we want to apply type D of the Serializability Theorem to a system employing First-Updater-Wins rule. So we'll delay its discussion until next section when a field level capable locking system is ready and we'll focus on First-Committer-Wins rule in this section.
+      </p>
+  
+      <p>
+        For such an implementation with a distributed clock, we need to worry about the following situation: when a read request from transaction T1 comes in with start timestamp t1, it's supposed to read the latest version before t1 under Snapshot Isolation. But what if this latest version from transaction T2 with commit timestamp t2 < t1 hasn't come in yet? In a distributed timestamp algorithm like HLC, it is in general possible that t1 and t2 are assigned by different nodes and the update by T2 may not have propagated to its destination when T1 is trying to read it.
+      </p>
+  
+      <p>
+        For an implementation with a distributed clock satisfying the Clock Condition, it turns out the possibility of reading a stale version of data can be eliminated if a span of waiting is introduced. Let's assume that we could use a shared semaphore s to control the access of all the tuple versions of a tuple. For example, if we could design the implementation so that all those versions are placed in a page, then we may use the semaphore of that page as s; alternatively, if these versions span across multiple pages in a, say, B tree, we could view the collection of semaphores for all these pages as a logical one and acquire them all before we access a tuple version in these pages. We prove this by contradiction: Suppose the latest write hadn't come in yet when the read in T1 happened. Then we would have t1 < timestamp to acquire s(shared mode) for the read by T1 < timestamp to acquire s(exclusive mode) for the write by T2 < t2, which contradicts with t2 < t1 to start with. Here we require the commit timestamp t2 to be assigned after T2 finishes its write of the updated tuple for the last inequality to be true. For example, if we use First-Committer-Wins rule as in the typical implementation, such a write is a pre-write and semaphore s(exclusive mode) is acquired before it. In this case, this requirement can certainly be fulfilled. All we have to do is to hold s till the commit timestamp is assigned and attached to the updated tuple. And that is the time span we got to wait. So now we have that T1 acquires semaphore s after T2 does. But that is after T2's commit timestamp is written to the newly generated tuple version. In any reasonable implementation, T2's update is visible to T1. Notice all three inequalities in the previous arguments follow from the Clock Condition. This mechanism need to be applied to both item read and predicate read so that they are up-to-date.
+      </p>
+  
+      <p>
+        This works fine if the tuple-based Snapshot Isolation implementation only has one copy of data. Contemporary distributed database implementations usually provide high available through replication. This introduces an extra challenge for implementing Snapshot Isolation: when a read request is directed to a secondary replica, the latest update of the requested data in the primary replica may not have propagated to this specific secondary replica yet. For example, in MySQL Cluster's synchronous replication implementation, an update in the primary replica is ready for reading in the commit phase while the same update in a secondary replica is still locked and won't be ready until the complete phase. If the Snapshot Isolation implementation employs a similar technology, this may break the rule in Snapshot Isolation that a transaction reads the latest update before its start timestamp if a read request is directed to a secondary replica. There are two ways to overcome this obstacle: direct reads to the primary replica only as in MySQL Cluster or let the read request wait till the secondary replica is up-to-date as in Google's Spanner(<a href="#co13" >[Co 13]</a>). We will talk more about this latter approach when we discuss First-Updater-Wins rule in next section.
+      </p>
+  
+      <p>
+        So the snapshot read of this distributed tuple-based Snapshot Isolation has been taken care of. Let's see what happens when two concurrent transactions update the same tuple. We assume these two transactions to be T1 and T2, which request and acquire semaphore s(exclusive mode) in successive order, and the start and commit timestamps for them are ts1, tc1 and ts2, tc2 respectively. Two situations arise when T2 request s: T1 either still holds s or already releases it. In the first situation, T2 is rolled back by First-Committer-Wins rule. In the second situation, if we also want to apply First-Committer-Wins rule, s can't be released immediately after T1 commits. This may not be a good idea since we don't have the intention to turn s into a long lock. So we take another approach: as long as we discover ts2 <= tc1, we may roll back T2. That is because ts1 < timestamp for T1 to release s < timestamp for T2 to acquire s < tc2 by the Clock Condition. Hence T1 and T2 are concurrent in the second situation if and only if ts2 <= tc1, But since T1 has already committed, we have to roll back T2. This way, one of two concurrent transactions updating the same tuple will be rolled back in either situation.
+      </p>
+  
+      <p>
+        Now that we have a distributed tuple-based Snapshot Isolation implementation, we may derive field versions from the tuple versions so that we have a field-based system. We then capture 'decision set' versions as we've demonstrated in Section <a href="#section4" >4</a>. And without any surprise, these 'captured' 'decision set' versions are the same as the derived ones. Reads(field reads and predicate reads) will behave the same as in the tuple-based implementation. Two concurrent transactions updating non-overlapping write sets, however, should be allowed. This can be accomplished by attaching a bitmap indicating which fields are modified to each tuple version. When the late comer among the two concurrent transactions comes in, it first requests for semaphore s(exclusive mode), it then compares its write set with the bitmap of the altered or supposed-to-be-altered tuple version; if that indicates a non-overlapping situation, the transaction can proceed or wait for s respectively; otherwise it is rolled back. This modification of the update logic should take care of both cases of overlapping or non-overlapping write sets for two concurrent transactions updating the same tuple. On top of this field-based Snapshot Isolation implementation, we may apply type D of the Serializability Theorem to achieve serializability.
+      </p>
+  
+      <p>
+        However, whether such an implementation satisfies the definition of Snapshot Isolation in Section <a href="#section4" >4</a> is still debatable. Alice may argue: although you call s a semaphore, it is held until the end of a transaction and covers at least a page, hence it is a long page lock; thereby goes the requirement in the definition of Snapshot Isolation in Section <a href="#section4" >4</a> that two transactions writing the same tuple can be concurrent if the intersection of the write sets of these two transactions is empty. Bob, on the other hand, got the following opinion: the time span s is held by a writing transaction is roughly one network round-trip and we may call this 'transient' in many cases; and even two concurrent transactions writing non-intersecting write sets on a tuple must contend for the semaphore of the containing page of that tuple.
+      </p>
+  
+      <p>
+        If you choose to stand with Alice, you need to wait until next section when we implement a field capable locking system. In this section we pretend we believed that Bob's got a point and see how far we can go.
+      </p>
+  
+      <p>
+        In this distributed Snapshot Isolation implementation, there are mainly three alternations to the typical standalone implementation employing First-Committer-Wins rule: a distributed clock satisfying the Clock Condition, a semaphore that covers all tuple versions for each tuple and spans till the end of the transaction when it is acquired for a write, and a bitmap in each tuple version that helps facilitate concurrent transactions updating non-overlapping write sets. Notice that this semaphore need to wait for the commit decision from a transaction coordinator to be released, which in turn could wait for another semaphore to be acquired. This could result in a dead lock situation and may be resolved by a time-out mechanism as usual. Also, in this field-based Snapshot Isolation implementation the tuple concept, which corresponds to a row in a table, still exists. A tuple version, doesn't exists logically; but it exists physically.
+      </p>
+  
+    </div>
+	
+	<div id="section5.3.2">
+      <h4>5.3.2 Alternative two</h4>
+	  
+	  <p>
+        In this alternative, we assume a similar database setup as in TiDB described in Appendix <a href="#appD" >D</a>. In other words, each row in a table is represented as a key-value pair so that both key and value are byte streams of arbitrary size. Then only exact size of space is needed from the underlying storage.
+      </p>
+	  
+	  <p>
+        MVCC is implemented as follows: for each tuple, a base tuple version is maintained with the smallest timestamp; for each update on this tuple after that timestamp, only the values of updated fields are stored. So the version set for this tuple looks like the following:
+      </p>
+	  
+      <pre><b>
+        key_version1 → value(tuple version)
+
+        key_version2 → value(field versions)
+
+        key_version3 → value(field versions)
+
+        ...... 
+	  </b></pre>
+	  
+	  <p>
+        Here a version indicator like 'version1' may well just be the timestamp when its updating transaction commits while the 'key' part in each key_version# is just the key of this tuple. 
+      </p>
+	  
+	  <p>
+        Combining both types of version, we should be able to approximate the goal of minimizing storage footprint of the database. Inside the value part, there is a header which stores a bitmap that indicates which fields are updated when this version is generated. When a later transaction queries this tuple in an item read or a predicate read, the MVCC system will first try to service this read from the latest version before the transaction's start timestamp; if the requested field versions or 'decision set' version can't be serviced only by this latest version(let's call it a miss), a preceding version is fetched, hoping the combined versions will be enough to accomplish the task; in the worst case, the base tuple version need to be fetched for this purpose. Notice in the item read case, a miss should rarely happen since a logical unit is usually updated and read as a whole.
+      </p>
+	  
+	  <p>
+        Again we use the First-Committer-Wins rule and semaphore s mechanism as in alternative one to guarantee a read reads the latest versions before the reading transaction's start timestamp. Other aspects like guaranteeing a replica to serve up-to-date data and using a bitmap to allow concurrent transactions updating non-overlapping write sets are also similar.
+      </p>
+	  
+	  <p>
+        In the process of garbage collection, all the versions that are no longer needed plus the version after them are collapsed into a new base tuple version. And the rest of the versions remain the same.
+      </p>
+	  
+	  <p>
+        With such a MVCC implementation, we may implement a field-based Snapshot Isolation as defined in Section <a href="#section4" >4</a>. On top of it, we may apply type D of the Serializability Theorem to it to achieve serializability. Notice this is the first demonstration that we DON'T need to build a field-based Snapshot Isolation system by deriving it from a tuple-based one. Of course, one may still build a tuple-based Snapshot Isolation system by applying the updated field versions to the base tuple version in this MVCC implementation first and then derive from it to give rise to a field-based Snapshot Isolation system. And we still get the same thing. But this approach is at best clumsy. And now we have a more natural field-based Snapshot Isolation system for type D of the Serializability Theorem.
+      </p>
+	
+	  <p>
+        Remark: In the Snapshot Isolation for a field-based system defined in Section <a href="#section4" >4</a>, we claim that each field version is attached with a timestamp logically. But physically, these timestamps can usually be coalesced so that only one is stored for multiple fields. This is demonstrated in both alternatives we've just presented.
+      </p>
+	  
+	  <p>
+        In alternative two, tuple versions are almost completely abandoned, except the base ones. Without type D of the Serializability Theorem, this kind of implementation may not seem natural at all. So by replacing type B of the Serializability Theorem with type D of the Serializability Theorem, we may not only improve concurrency, but also help elicit novel implementation of serializability.
+      </p>
+	  
+	</div>
+  </div>
+  
+  <div id="section5.4">
+    <h3>5.4 Primary algorithm for the generalization</h3>
+  
+    <p>
+      The consecutive RW conflicts between concurrent transactions in Theorem 2.1 form the so-called 'dangerous structure' in the nomenclature of Fekete's paper (<a href="#fe05" >[Fe 05]</a>). Cahill's team then find a book-keeping way to keep track of these 'dangerous structure's when an application is executed under Snapshot Isolation in <a href="#ca08" >[Ca 08]</a>. For every transaction T in the application, two boolean variables T.inConflict and T.outConflict are set respectively if a RW conflict is coming into or going out from T. They are both stored in the transaction record of T. Also, a new SIREAD lock is introduced to capture a RW conflict with a write lock for the First-Updater-Wins rule. No extra blocking is introduced though, since a SIREAD lock is more like a flag to indicate that a read has happened. A SIREAD lock is placed when an item read or a predicate read starts. The following is the primary algorithm in <a href="#ca08" >[Ca 08]</a>:
+    </p>
+	
+	<pre><b>
+      modified begin(T):
+
+          existing SI code for begin(T)
+          set T.inConflict = T.outConflict = false
+
+      modified read(T, x):
+
+          get lock(key=x, owner=T, mode=SIREAD)
+          if there is a WRITE lock(wl) on x
+              set wl.owner.inConflict = true
+              set T.outConflict = true
+
+          existing SI code for read(T, x)
+
+          for each version (xNew) of x
+          that is newer than what T reads:
+              if xNew.creator is committed
+                  and xNew.creator.outConflict:
+                      abort(T)
+                      return UNSAFE_ERROR
+              set xNew.creator.inConflict = true
+              set T.outConflict = true
+
+      modified write(T, x, xNew):
+
+          get lock(key=x, locker=T, mode=WRITE)
+
+          if there is a SIREAD lock(rl) on x
+              with rl.owner is running or commit(rl.owner) > begin(T):
+                  if rl.owner is committed
+                      and rl.owner.inConflict:
+                          abort(T)
+                          return UNSAFE_ERROR
+                  set rl.owner.outConflict = true
+                  set T.inConflict = true
+
+          existing SI code for write(T, x, xNew)
+          # do not get write lock again
+
+      modified commit(T):
+
+          if T.inConflict and outConflict:
+              abort(T)
+              return UNSAFE_ERROR
+
+          existing SI code for commit(T)
+          # release WRITE locks held by T
+          # but do not release SIREAD locks  
+	</b></pre>
+	
+	<p>
+      Remark: In this section, instead of First-Updater-Wins rule, we use First-Committer-Wins rule to resolve write conflicts between concurrent transactions. Such an implementation doesn't require long locks. Instead, we'll develop a flag system, which is discussed in detail in next sub-section, to capture RW conflicts. In a flag system, we use a read flag for a SIREAD lock and a write flag for a write lock. But in this sub-section, let's still hold on to the concepts of SIREAD lock and write lock so that it doesn't deviate too much from Cahill's work.
+    </p>
+	
+	<p>
+      In the 'modified read' part of the algorithm, we can see that whenever there is a version written after the read, it is signified as causing a RW conflict upon item x. So Cahill's team follows strictly what <a href="#be87" >[Be 87]</a> is interpreting RW conflicts: a read conflicts with a write on the same data item, even if there are a thousand other writes between them. This is absolutely unnecessary of course, according to type D of the Serializability Theorem in this article. Only the version written immediately after matters. So we can optimize the 'modified read' part as follows:
+    </p>
+	
+	<pre style="color:red"><b>
+	  modified read(T, x) for item RW conflicts:
+
+          if a version (xNew) of x right after what T intends to read exists:
+              if xNew.creator is committed
+                  and xNew.creator.outConflict:
+                      abort(T)
+                      return UNSAFE_ERROR
+              set xNew.creator.inConflict = true
+              set T.outConflict = true
+          else:
+              get lock(key=x, owner=T, mode=SIREAD)
+              if there is a WRITE lock(wl) on x
+                  set wl.owner.inConflict = true
+                  set T.outConflict = true
+
+          existing SI code for read(T, x)
+	</b></pre>
+	
+	<p>
+      So this is the case for item RW conflicts. For predicate RW conflicts, we can't push down the acquisition of a SIREAD lock as in the optimized 'modified read' for the case of item RW conflicts since a granular lock usually covers a range and after the identification of an IN or OUT operation that is causing a conflict, there might be other IN or OUT operations causing conflicts on other tuples in that range. The optimized 'modified read' for predicate RW conflicts in general is given as follows:
+    </p>
+	
+	<pre style="color:red"><b>
+	  modified read(T, R) for predicate RW conflicts:
+
+          get lock(range=R, owner=T, mode=SIREAD)
+          if there is a WRITE lock(wl) on x in R
+          generating the first version of match change
+              set wl.owner.inConflict = true
+              set T.outConflict = true
+
+          existing SI code for read(T, R)
+
+          for each version (xNew) of x in R
+          that is the first version of match change after what T reads:
+              if xNew.creator is committed
+                  and xNew.creator.outConflict:
+                      abort(T)
+                      return UNSAFE_ERROR
+              set xNew.creator.inConflict = true
+              set T.outConflict = true
+	</b></pre>
+	
+	<p>
+      Here R is a range that covers the predicate read. In pessimistic technology, (multi-)granularity locking is usually employed to fence off conflicting writes to a predicate read. In MySQL InnoDB, R could be just what a bunch of 'gap lock's cover; in the serializability implementation I've developed for MySQL Cluster, R could be just what a regular lock in the higher hierarchy covers if the application is well-structured; in TiDB, R could be multiple Regions where the predicate read happens; in Cahill's prototype of Serializable Snapshot Isolation deployed in Berkeley DB, R could be just what a bunch of pages span. Optimistic technology may not employ locks, but the concept of range R remains the same.
+    </p>
+	
+	<p>
+      In a distributed database system, components of R may scatter into different nodes. We probably should replace R in the algorithm with its local component so that decisions can be made locally to boost performance. This could lead to false positives though since an update that moves a tuple from one component to another doesn't actually generate conflicts.
+    </p>
+	
+	<p>
+      In Example <a href="#example12" >12</a>, we've discussed the new incarnation of a tuple with the same primary key might cause confusion. In our context, let's say a transaction T1 reads the last visible version of an item and the tuple is deleted and re-inserted later by transactions T2 and T3 respectively; if the system can't tell the difference between these two incarnations, it might identify it as a RW conflict between T1 and T3 instead of T1 and T2 and could cause unnecessary abortion of transaction T1 or T3 since the last visible version and the newly inserted version are consecutive in the versioning system(because a deletion generates the 'dead' version logically, but not necessarily physically). The solution we've suggested in Example 12 was to attach timestamps of creation to different incarnations. For Snapshot Isolation we've built our serializability implementation upon, we have another approach: create and place a 'dead' version between these two versions so that the two version sets are isolated. This works for predicate RW conflicts too. Notice this may not be appropriate for a system that only stores one version in the database like MySQL Cluster. Besides breaking the semantics, a garbage collection system that purges these 'dead' versions is also needed. But in MVCC system like Snapshot Isolation, such a garbage collector already exists. We just need to add the 'dead' versions to the set to be purged.
+    </p>
+	
+	<p>
+      Now let's look at the following optimized modified write(T, x, xNew) for item RW conflicts:
+    </p>
+	
+	<pre><b>
+	  modified write(T, x, xNew) for item RW conflicts:
+
+          get lock(key=x, locker=T, mode=WRITE)
+
+          if there is a SIREAD lock(rl) on x
+              with rl.owner is running or commit(rl.owner) >= begin(T):
+                  if rl.owner is committed
+                      and rl.owner.inConflict:
+                          abort(T)
+                          return UNSAFE_ERROR
+                  set rl.owner.outConflict = true
+                  set T.inConflict = true
+
+          existing SI code for write(T, x, xNew)
+          # do not get write lock again
+
+          release SIREAD lock(rl) on x if present
+	</b></pre>
+	
+	<p>
+	  Remark: The condition 'commit(rl.owner) > begin(T)' has been altered to 'commit(rl.owner) >= begin(T)' to adapt to the new definition of 'concurrent transaction' with a distributed clock as discussed in subsection <a href="#section5.1" >5.1</a>.
+	</p>
+	
+	<p>
+      From the discussion of optimized modified read(T, x) for item RW conflicts case, we know that this write must be the first one after x's read if a SIREAD lock for x exists. So they constitute an item RW conflict. After the write is completed, we may release the SIREAD lock(rl) on x since we don't need that for a later write according to type D of the Serializability Theorem.
+    </p>
+	
+	<p>
+      In the following optimized modified write(T, x, xNew) for predicate RW conflicts, we can't release the SIREAD lock after the write is completed since other writes in the range might need it later. So the pseudo-code below looks similar as the original:
+    </p>
+	
+	<pre><b>
+	  modified write(T, x, xNew) for predicate RW conflicts:
+
+          get lock(key=x, locker=T, mode=WRITE)
+
+          if there is a SIREAD lock(rl) on a range that writing of x is the first match change,
+              with rl.owner is running or commit(rl.owner) >= begin(T):
+                  if rl.owner is committed
+                      and rl.owner.inConflict:
+                          abort(T)
+                          return UNSAFE_ERROR
+                  set rl.owner.outConflict = true
+                  set T.inConflict = true
+
+          existing SI code for write(T, x, xNew)
+          # do not get write lock again
+	</b></pre>
+	
+	<p>
+      Combining both the item and predicate cases, we got the following algorithm for the optimized modified write(T, x, xNew) case.
+    </p>
+	
+	<pre style="color:red"><b>
+	  modified write(T, x, xNew):
+
+          get lock(key=x, locker=T, mode=WRITE)
+
+          if there is a SIREAD lock(rl) on x 
+              or there is a SIREAD lock(rl) on a range that writing of x is the first match change,
+              with rl.owner is running
+              or commit(rl.owner) >= begin(T):
+                  if rl.owner is committed
+                      and rl.owner.inConflict:
+                          abort(T)
+                          return UNSAFE_ERROR
+                  set rl.owner.outConflict = true
+                  set T.inConflict = true
+
+          existing SI code for write(T, x, xNew)
+          # do not get write lock again
+
+          if present, release SIREAD lock(rl) on x, 
+          but not those on a range that writing of x conflicts with
+	</b></pre>
+	
+	<p>
+      The pseudo-code for modified begin(T) and modified commit(T) remains the same in this optimize algorithm. The arguments for the correctness of this optimized algorithm are the same for the modified algorithm in <a href="#ca08" >[Ca 08]</a>.
+    </p>
+	
+	<p>
+      Notice any transaction record must be kept until all the active and future transactions in the system have greater starting timestamps than its owning transaction's commit timestamp so that they can't be concurrent with the transaction in concern. In a distributed system, the garbage collector need to query all the necessary nodes to come to the conclusion that all active transactions satisfy this condition before a transaction record can be purged. This happens asynchronously and should not impose a performance hit.
+    </p>
+	
+	<p>
+      However, this only guarantees all active transactions are fine. What about the future ones? A distributed clock usually doesn't service timestamps in a monotonic manner. So could a future transaction be assigned a starting timestamp older than the commit timestamp of the transaction record's owning transaction? For instance, in the contrived example when we discussed Lamport's logical clock, a node being inactive for a long time could generate such a timestamp. The solution is again to timestamp the garbage collection messages or the heartbeat messages to find out the smallest possible value for the maximum timestamp each node has issued. If all these values are greater than the commit timestamp in concern, then we are fine since this clock algorithm is monotonic at each node. A similar strategy can be applied to other distributed clocks listed earlier, except the 'happened before' distributed clock. For the 'happened before' distributed clock, if the Monotonicity Condition is satisfied, it will generate timestamps monotonically at each node too. But the discussion in Appendix <a href="#appB" >B</a> indicates that it is not always true. If you are going to use a distributed clock other than those discussed in this article, this issue must be addressed. For the rest of this section, we'll assume this technique is in place and we don't need to worry about these future transactions once all the active ones have been checked up.
+    </p>
+	
+	<p>
+      It turns out this purging rule also applies to SIREAD locks that haven't been released in the primary algorithm too. Let's see why from the following
+    </p>
+	
+	<div class="example" id="example27">
+	
+	  <p>
+        <b>Example 27</b>: Let T1 and T2 be two transactions executed under Snapshot Isolation with a timestamp service satisfying the Clock Condition. And there is a predicate RW conflict from T1 to T2 such that the predicate read in T1 uses a 'decision set' version v1 while T2 established the next 'decision set' version v2 that changes the match. The start and commit timestamps for T1 and T2 are ts1, tc1 and ts2, tc2 respectively such that T1's start “happened before” T2's and T1's commit “happened before” T2's and hence ts1 < ts2 and tc1 < tc2.
+      </p>
+	
+	  <p>
+        If the SIREAD lock for the predicate read in T1 was released when T1 committed at tc1, then when T2 tried to commit its write at tc2, the RW conflict could not be recognized. So it must be kept until after tc1. And it must be kept until all the active or future transactions in the system have greater starting timestamps than tc1. That's because by then a potentially conflicting T2 won't be concurrent with T1 any more and hence won't be part of a 'dangerous structure'.
+      </p>
+	
+	  <p>
+        The item RW conflict case is similar.
+      </p>
+	  
+	  <pre><b>
+	                                                                                                       ## 
+	  </b></pre>
+	
+	</div>
+	
+	<p>
+      Garbage collection of field and 'decision set' versions versions is similar, but we express it in a different way: as long as the distributed clock has advanced to after the timestamp ts of the next version of a concerned version and no transaction in the system has a start timestamp <= ts. For a distributed clock that gives out timestamps monotonically at each node, the first half of this condition implies each node's maximum generated timestamp is greater than ts.
+    </p>
+	
+	<p>
+      So we use a flag called SIREAD lock to capture the 'Read' part of a RW conflict. Can we do that with the 'Write' part too and replace the write lock with another flag? After all, one attractive feature of an optimistic concurrency control mechanism is that we don't have to build a locking system. It turns out we can. In the Snapshot Isolation we've defined in the last section, updates to both the same field or the same 'decision set' are required NOT to be concurrent and this renders the write locks unnecessary. A flag to replace a write lock must also be kept until all the active and future transactions in the system have greater starting timestamps than its owning transaction's commit timestamp. An implementation of this flag system will be given in the next subsection.
+    </p>
+	
+	<p>
+      With the optimization from type D of the Serializability Theorem, there will be less false positives when it comes to aborting transactions to prevent conflict loops from forming. But the fact that a conflict loop implies existence of 'dangerous structure', but not the other way around still will give rise to some of them.
+    </p>
+	
+	<p>
+      Various ways to optimize the primary algorithm are discussed in Cahill's paper (<a href="#ca08" >[Ca 08]</a>). I include them here for your reference. In Cahill's primary algorithm, they always abort the pivot(T2 in Theorem 2.1 of <a href="#fe05" >[Fe 05]</a>) if either end of a RW conflict can be aborted. One may choose a different strategy like aborting the younger transaction so that long running ones are more likely to survive. Also for simplicity, in the primary algorithm, the abortion decision is postponed till the transaction's commit. But one can do that once a 'dangerous structure' is detected. Likewise, conflicts are not recorded(with T.inConflict and T.outConflict) against transactions that have already been aborted or that will due to both flags being set. 
+    </p>
+	
+	<p>
+      At last, as a solute to Cahill's fine work, I will include one of my own here: detect 'dangerous structure' that is not in a cycle and avoid aborting those three transactions when the primary algorithm executes if a pre-analysis is possible(like in the case where the transactions in an application are known).
+    </p>
+	
+  </div>
+  
+  <div id="section5.5">
+    <h3>5.5 A flag system</h3>
+	
+	<p>
+      We'll provide a sketch of an implementation for a flag system to capture the RW conflicts as promised in the last subsection with a design that starts with the Observer design pattern as described in the 'gang of four' book(<a href="#ga94" >[Ga 94]</a>). The diagrams for class inheritance are depicted as follows:
+    </p>
+	
+	<table style="width: 100%">
+      <tr style="height: 200px">
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">Subject</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>Attach(Observer)</td>
+            </tr>
+			<tr>
+              <td>Detach(Observer)</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>Notify()</td>
+            </tr>
+          </table> 
+		</td>
+        <th style="width: 40%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%;">
+            <tr>
+              <th style="text-align: center; border: 1px solid white;border-collapse: collapse"><--------------------------------------------------------------------</th>
+            </tr>
+		  </table>
+		</th> 
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">ConcreteSubject</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>GetState()</td>
+            </tr>
+			<tr>
+              <td style="border-bottom: 5px solid black">SetState(Observer)</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>subjectState</td>
+            </tr>
+          </table> 
+		</td>
+      </tr>
+    </table>
+	
+	<table style="width: 100%">
+      <tr style="height: 200px">
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">Observer</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>Update(()</td>
+            </tr>
+          </table> 
+		</td>
+        <th style="width: 40%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%;">
+            <tr>
+              <th style="text-align: center; border: 1px solid white;border-collapse: collapse"><--------------------------------------------------------------------</th>
+            </tr>
+		  </table>
+		</th> 
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">ConcreteObserver</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>transaction</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>timestamp</td>
+            </tr>
+			<tr style="background-color: white">
+              <td>observerState</td>
+            </tr>
+          </table> 
+		</td>
+      </tr>
+    </table>
+	
+	<p>
+      For the item RW conflict case, a ConcreteSubject object representing a field version is instantiated whenever a read of that version or the write of next version happens for the first time. Each such read is represented as a ConcreteObserver, which is stored in the list observers inherited from the Subject class. The transaction that performs this read and the time when it happens are recorded in the two variables in ConcreteObserver. The Notify() method is implemented as follows:
+    </p>
+	
+	<pre><b>
+      for all o in observers {
+        o.Update()
+        Detach(o)
+      }
+	</b></pre>
+	
+	<p>
+      The subjectState field is used to represent the write of next version. It's initialized to be NULL and updated when that write commits. For simplicity reason, its type is also assumed to be ConcreteObserver in this sketch. The two firlds: transaction and timestamp in ConcreteObserver become the transaction that performs this write and the time when it happens, of course. You may add a new type for it if you prefer, but the diagrams need to be altered accordingly. It is updated in the SetState(Observer o) method when the write of next version happens as follows:
+    </p>
+	
+	<pre><b>
+      if subjectState == NULL {
+        subjectState = o
+      }
+      …
+      Notify()
+	</b></pre>
+	
+	<p>
+      The Attach(Observer o) method is implemented as follows:
+    </p>
+	
+	<pre><b>
+      if subjectState == NULL {
+        observers.Add(o)
+      } else {
+        o.Update()
+      }
+	</b></pre>
+	
+	<p>
+      The Update() method is implemented as usual:
+    </p>
+	
+	<pre><b>
+      observerState = subject.getState()
+	</b></pre>
+	
+	<p>
+      Here the subject field is inherited from the Observer class and getState() simply returns  subjectState. Inside method Update(), this.transaction's outConflict and observerState.transaction's inConflict are both updated to be true. In a typical operation scenario of the flag system, a bunch of reads of a field version come in first and each register itself in the observers list, then a write of next version happens and clears the list; after that, every read of that field version is recognized as causing a RW conflict and doesn't need to be added to the observers list any more.
+    </p>
+	
+	<p>
+      In a typical implementation, we may arrange the access to subjectState to be atomic, while that to the list observers is protected by a semaphore. But then consider the following scenario: transaction T1 reads a field version(Attach(Observer o) is called in that process) and discovers that subjectState is NULL and tries to add an Observer to the list; soon after that, transaction T2 writes next version of that field(SetState(Observer o) is called in that process) and tries to notify every Observer in the observers list; if for some reason(the thread that executes T1 got context-switch out after subjectState is accessed, for example), T2 acquires the semaphore of the observers list before T1 does and clears the observers list before the addition of the Observer for T1 to it. This violates the semantics of the typical operation scenario described in the last paragraph by adding more Observers to the list after it is cleared. To circumvent this, we may require SetState and Attach to request an exclusive semaphore x before they access subjectState and observers and to relinquish it after that. The following are the resulted code for them:
+    </p>
+	
+	<p>
+      <b>SetState:</b>
+    </p>
+	
+	<pre><b>
+      sem_get(x)
+      if subjectState == NULL {
+        subjectState = o
+      }
+      …
+      Notify()
+      sem_give(x)
+	</b></pre>
+	
+	<p>
+      <b>Attach:</b>
+    </p>
+	
+	<pre><b>
+      sem_get(x)
+      if subjectState == NULL {
+        observers.Add(o)
+      } else {
+        o.Update()
+      }
+      sem_give(x)
+	</b></pre>
+	
+	<p>
+      Locality is important. We now have a ConcreteSubject object for each field version of a field. To take advantage of temporal locality, we may place all the field versions of that field into one single ConcreteSubject object. This way we will have as many observers and subjectState pairs as the number of versions of that field in it. We may even use one single exclusive semaphore to control access to all these pairs if we want to reduce memory footprint, at the cost of lower concurrency.
+    </p>
+	
+	<p>
+      Usually all fields in a logical unit are accessed at the same time. We may take advantage of spatial locality if we place field versions of all these fields in one ConcreteSubject object. We may also consider using one single exclusive semaphore for all of them if not too much performance hit is imposed. If nearby rows in an index are often accessed together, we may go the extra mile by placing the relevant field versions in these rows into one ConcreteSubject object. For example, in TiDB,  placing the relevant fields in the rows of a Region into a ConcreteSubject object may not be a bad idea(if a Region is too large, try to divide it into smaller blocks); in a system like MySQL Cluster, however, this may not necessarily be beneficial since this part of spatial locality is at least partially destroyed by hashing.
+    </p>
+	
+	<p>
+      I truly hope that future serializability implementations can make all these – what field versions to place into a ConcreteSubject object and how to use semaphores to control access – configurable to developers. After all, who knows whether an application can take advantage of locality better than its developer? Or even better if the implementation could provide a logical unit version counterpart to field version so that a developer can choose it if he/she is certain that the application accesses data strictly through logical units. This approach can also reduce memory footprint by reducing the  number of Observer objects in the system.
+    </p>
+	
+	<p>
+      Even so, there still could be too many Observer objects in the system that might lead to resource exhaustion. PostgreSQL handles this with the following strategy: if too many tuples in a page have acquired a tuple SIREAD lock, aggregate them into one page SIREAD lock; if too many page SIREAD locks are in the system, aggregate them into one relation SIREAD lock. The details can be found <a href="https://wiki.postgresql.org/wiki/Serializable" target="_blank">here</a> in PostgreSQL's wiki(at the end of “1.5 PostgreSQL Implementation”). Future flag system implementation could provide a similar mechanism, with an additional field level in the picture of course. Such an approach will nullify our effort of resolving conflicts down to field level and lead to false positives that would not have surfaced, hence should only be considered a measure of last resort. Before that, the system should provide enough amount of memory for this purpose. Luckily, today's high-end servers can already host memory up to a few Tbs. There should be more than enough memory for us, especially when the data in the database are stored on disk. It is a good idea to make the maximum amount of memory for the flag system to allocate Observer objects to be configurable so that database application developers can make their own decision since once again, who knows the application better than them? Designing the Observer objects as compact as possible also helps.
+    </p>
+	
+	<p>
+      In the predicate RW conflict case, when a predicate read of or a write to range R happens, a ConcreteSubject class is instantiated. The predicate reads are registered in the observers list as in the item RW conflict case, while subjectState becomes a list of objects representing writes in this range. We need a new concrete observer for this kind of object this time. So we have the following diagrams:
+    </p>
+	
+	<table style="width: 100%">
+      <tr style="height: 150px">
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">Observer</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>Update(Observer)</td>
+            </tr>
+          </table> 
+		</td>
+        <th style="width: 40%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%;">
+            <tr>
+              <th style="text-align: center; border: 1px solid white;border-collapse: collapse"><--------------------------------------------------------------------</th>
+            </tr>
+		  </table>
+		</th> 
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">ConcreteObserver</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>transaction</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>timestamp</td>
+            </tr>
+          </table> 
+		</td>
+      </tr>
+    </table>
+	
+	<table style="width: 100%">
+      <tr style="height: 150px">
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">Observer</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>Update(Observer)</td>
+            </tr>
+          </table> 
+		</td>
+        <th style="width: 40%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%;">
+            <tr>
+              <th style="text-align: center; border: 1px solid white;border-collapse: collapse"><--------------------------------------------------------------------</th>
+            </tr>
+		  </table>
+		</th> 
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">ConcreteObserverForWrite</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>transaction</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>timestamp</td>
+            </tr>
+          </table> 
+		</td>
+      </tr>
+    </table>
+	
+	<p>
+       The methods to access subjectState are different too.
+    </p>
+	
+	<table style="width: 100%">
+      <tr style="height: 200px">
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">Subject</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>Attach(Observer)</td>
+            </tr>
+			<tr>
+              <td>Detach(Observer)</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>Notify(Observer)</td>
+            </tr>
+          </table> 
+		</td>
+        <th style="width: 40%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%;">
+            <tr>
+              <th style="text-align: center; border: 1px solid white;border-collapse: collapse"><--------------------------------------------------------------------</th>
+            </tr>
+		  </table>
+		</th> 
+        <td style="width: 30%; border: 1px solid white;border-collapse: collapse">
+		  <table style="width: 100%; border: 5px solid black">
+            <tr>
+              <th style="border-bottom: 5px solid black">ConcreteSubject</th>
+            </tr>
+            <tr style="background-color: white">
+              <td>AttachWrite(Observer)</td>
+            </tr>
+			<tr>
+              <td>DetachWrite(Observer)</td>
+            </tr>
+			<tr>
+              <td style="background-color: white;border-bottom: 5px solid black">NotifyWrite(Observer)</td>
+            </tr>
+            <tr style="background-color: white">
+              <td>subjectState</td>
+            </tr>
+          </table> 
+		</td>
+      </tr>
+    </table>
+	
+	<p>
+      The implementation of Notify(Observer oForWrite) is as follows:
+    </p>
+	
+	<pre><b>
+      for all oForRead in observers {
+        oForRead.Update(oForWrite)
+      }
+	</b></pre>
+	
+	<p>
+      Here oForRead and oForWrite are of types ConcreteObserver and ConcreteObserverForWrite respectively. This is similar for the implementation of NotifyWrite(Observer oForRead):
+    </p>
+	
+	<pre><b>
+      for all oForWrite in subjectState {
+        oForWrite.Update(oForRead)
+      }
+	</b></pre>
+	
+	<p>
+      The implementations of the Update(Observer) methods in the two concrete observer classes are symmetric. In ConcreteObserver, the Observer oForWrite passed in is a ConcreteObserverForWrite object that represents a write; the Update(Observer) method examines whether that write is the first match change for the read represented by its calling Observer oForRead. On the other hand, in ConcreteObserverForWrite, the Observer oForRead passed in is a ConcreteObserver object that represents a read; the Update(Observer) method examines whether the write represented by its calling Obseever oForWrite is the first match change for it. If it's affirmative, outConflict of the reading transaction and inConflict of the writing transaction are both set.
+    </p>
+	
+	<p>
+      Both observers and subjectState are guarded with a shared semaphore for access. Let's called these two semaphores s.o and s.s respectively. Then the implementation of method AttachWrite(Observer oForWrite) is as follows:
+    </p>
+	
+	<pre><b>
+      sem_get(s.s, exclusive_mode)
+      subjectState.Add(oForWrite)
+      sem_give(s.s)
+      sem_get(s.o, shared_mode)
+      Notify(oForWrite)
+      sem_give(s.o)
+	</b></pre>
+	
+	<p>
+      Symmetrically, the implementation of method Attach(Observer oForRead) is as follows:
+    </p>
+	
+	<pre><b>
+      sem_get(s.o, exclusive_mode)
+      observers.Add(oForRead)
+      sem_give(s.o)
+      sem_get(s.s, shared_mode)
+      NotifyWrite(oForRead)
+      sem_give(s.s)
+	</b></pre>
+	
+	<p>
+      If we view observers and subjectState as two data fields and the access of them in methods AttachWrite and Attach as two transactions, it is possible to find a conflict loop between them when they are executed concurrently and hence it is NOT serializable by type D of the Serializability Theorem. However, the semantics that each and every predicate RW conflict is captured remains correct since each possible predicate RW conflict is evaluated by either AttachWrite or Attach. That said, there is a chance that a predicate RW conflict is evaluated twice in this process. But that doesn't change the correctness of the algorithm since the updates to outConflict and inConflict are idempotent.
+    </p>
+	
+	<p>
+      In some implementations, range Rs could be merged or split. For example, in TiDB, two Regions can be merged if there are two few tuples in them and a Region can be split if it gets bigger than its default size of 256 MB. The algorithm must be able to cope with this. For the merging case, two relevant ConcreteSubject objects are merged into one, so are the observers lists and the subjectState lists in them. For the splitting case, the observers list is copied to both newly generated  ConcreteSubject objects, while the subjectState list is split into two so that each only contains writes for its sub-range.
+    </p>
+	
+	<p>
+      So far, this works fine for a predefined range R that is associated with a known object like a Region in TiDB, a page in Cahill's prototype of Serializable Snapshot Isolation deployed in Berkeley DB or a tuple in the added table for predicate RW conflicts in the serializability implementation I've developed for MySQL Cluster. But in other implementations when this association is missing, there is an extra issue. For example, in the CockroachDB case, the actual range(or its components) inside a where clause is recorded in a node-local cache to handle predicate RW conflicts. Say, in a statement “… where key>=1 and key<5 or key>100 and key<200”, [1, 5) and (100, 200) are inserted into its target node-local cache respectively. If we use a range R for [1, 5) in the primary algorithm and an insert into it “happened before” the predicate read, but they still constitute a predicate RW conflict(for example, the transaction with the predicate read starts with a earlier timestamp and it's a long-running one, the predicate read happens very late in that transaction); then when the insert comes in, we don't know where to put it since the range R for [1, 5) hasn't been determined yet. To get around this, we need to provide an auxiliary data structure like a list to hold such writes until an appropriate predicate read shows up, or otherwise it's garbage-collected.
+    </p>
+	
+	<p>
+      So it's time to talk more about garbage collection. Some objects in observers and all objects in subjectState are never deleted in the primary algorithm. They need to be garbage-collected when they are not needed any more. For those inside observers, they are just SIREAD locks and the rule for garbage-collecting them has been discussed. For an object inside subjectState, the rule for garbage collection is also the same: it can be purged as long as no active or future transactio in the system has a start timestamp <= timestamp of it; this way, all the possibly conflicting SIREAD locks have been processed against it before garbage collection. The Detach and DetachWrite methods are used in this garbage collection process. This rule also applies to the writes in the auxiliary data structure.
+    </p>
+	
+	<p>
+      We also need a buffer pool to store pre-located and initialized ConcreteObserver and ConcreteSubject objects for performance considerations, especially in a system that doesn't support slab allocation.
+    </p>
+	
+	<p>
+      Notice in this flag system, every read is accompanied by a write(of an Observer object), at least. In contrast, in a database with pessimistic technology, only a locking read is accompanied by a write(the lock request in the locking system). This may impact performance, of course. Future implementation should provide tools for pre-analysis so that unnecessary writes to the flag system(for example, if a field is only read, but never written or the other way around) are not possible. I understand Serializable Snapshot Isolation poses as a serializability implementation that can handle workload that is unknown at the time of development. But sometimes performance trumps and important workloads usually don't allow arbitrary transactions to be fed into the system for safety reasons. Providing these pre-analysis tools certainly helps with this latter situation. For example, if these tools are good enough, we don't even need to activate the flag system for TPCC since it will be detected that it doesn't contain any 'dangerous structure'.
+    </p>
+	
+	<p>
+      So far the flag system works if all transactions commit successfully. But what if a transaction got aborted prematurely, or the system crashes? For example, what happens if a transaction T is aborted after a SIREAD lock is added to the observers list and the subjectState list is being notified? We'll try to answer the following two key questions should T be aborted prematurely, or the system crash:
+    </p>
+	
+	<ol>
+	  <li>
+		Does the flag system still guarantee correctness by destructing each and every 'dangerous structure'?
+      </li>
+	  <li>
+		Can the flag system maintain a correct state when this happens?
+      </li>
+	</ol>
+	
+	<p>
+      We first look at the case when a transaction got aborted prematurely. In the example we've just described, we may just remove it(with the Detach method) when its containing transaction is rolled back. Some objects in the subjectState list may be deleted(with the DetachWrite method) when their containing transactions are rolled back because their associated inConflict fields are set. Although these transactions are aborted for some transaction that never commits, it only generates false positives for presence of 'dangerous structure's. So the answer to the first question is affirmative. The flag system remains in a correct state after T is rolled back since all the objects for the relevant transactions that can't commit are removed.
+    </p>
+	
+	<p>
+      In the case where the system crashes, for the first question, if the recovery mechanism is like Write-Ahead-Logging so that no committed transaction is lost when the system crashes, all we need to worry about are those transactions that haven't committed when disaster strikes. Some of them may have caused other transactions to abort, but that is it. In particular, they don't roll back committed ones and hence doesn't affect the surviving ones. So the answer to the first question is again affirmative. 
+    </p>
+	
+	<p>
+      If, on the other hand, the recovery mechanism is like neighborhood-Write-Ahead-Logging as in MySQL Cluster so that some committed transactions are lost in the crash, the answer to the first question is still affirmative. The reason is simple: if all committed transactions can't generate any 'dangerous structure', how could some of them? 
+    </p>
+	
+	<p>
+      The second question doesn't apply in either case if the system crashes since upon system restart, the flag system-which exists in memory only-will be recreated from scratch. We've used an example for demonstration here. But actually it works for all other situations.
+    </p>
+	
+	<p>
+      Notice this flag system implementation doesn't require a join to be re-written as equivalent statements as in the serializability implementation I've developed for MySQL Cluster. That is because conflict resolution happens when a predicate read is on-going, which is after an execution plan is chosen.
+    </p>  
+	
+  </div>
+  
+  <div id="section5.6">
+    <h3>5.6 False Positives</h3>
+	
+    <p>
+      Some steps in this algorithm could generate false positives for conflict loops. We'll identify them and try to provide alleviation if possible.    
+    </p>
+	
+	<ol>
+	  <li>
+		Having a 'dangerous structure' doesn't mean it is in a conflict loop. An implementation may provide tools for pre-analysis of conflicts so that the obvious false positives can be discovered beforehand. And it should provide means to annotate the relevant conflicts such that the primary algorithm can skip them.
+      </li>
+	  <li>
+		Aggregation of finer granularity SIREAD locks into one coarser granularity SIREAD lock could also lead to false positives.
+      </li>
+	  <li>
+		Range R chosen to cover a predicate read is too large and this could lead to false positives. Make sure this cover is as 'tight' as possible is an alleviation. For example, in TiDB, if a Region is too large, we may use a sub-region of it as R if that is supported.
+      </li>
+	  <li>
+		If range R is scattered into different nodes, an update that moves a tuple from one component to another could lead to a false positive. To eliminate this type of false positives, we need to globally monitor R. This may induce a performance hit.
+      </li>
+	  <li>
+		The last type of false positives are those caused by a transaction that never commits as we've just demonstrated in last subsection. One way to eliminate some of them is to set the inConflict and outConflict fields in the primary algorithm right before T commits(delay calling of Update() methods until then), so that those transactions aborted early are not causing any false positive.
+      </li>
+	</ol>
+	
+	<p>
+	  This last technique of reducing false positives is relevant to the answer of the following question: can we move the flags up and down in a transaction? In the serializability implementation I've developed for MySQL Cluster, we can always move the locks for prevention measures up the transaction, and sometimes move them down. What is the situation in a flag system? Are there any implications of doing that?
+	</p>
+	
+	<p>
+	   It turns out we may move them up or down freely. That is because altering their locations in a transaction only changes the time they are inserted into the observers and subjectState lists, not the outcome of the methods those actions triggered. We've just seen the advantage of moving these flags downward: potentially less other transactions are rolled back because they may have already committed when the flags are set. The disadvantage, of course, is that this transaction itself might get aborted when a 'dangerous structure' exists since the counterpart has already committed and can't be rolled back any more. In this case, some less work could be saved should this transaction set those flags and got rolled back early. 
+	</p>
+	
+  </div>
+  
+  <div id="section5.7">
+    <h3>5.7 Summary and discussion</h3>
+	
+	<p>
+	  Let's summarize what we've accomplished in generalizing Serializable Snapshot Isolation to a distributed system:
+	</p>
+	
+	<ol>
+	  <li>
+		A field-based Snapshot Isolation for a distributed system is defined in Section <a href="#section4" >4</a>.
+      </li>
+	  <li>
+		On top of it, type D of the Serializability Theorem is proved in Section <a href="#section4" >4</a>. It can be applied to a distributed system as other types.
+      </li>
+	  <li>
+		Two alternatives are provided to actually implement the underlying field-based database system in this section. A distributed clock satisfying the Clock Condition can be chosen to implement a field-based Snapshot Isolation on top of it. 'Decision set' versions are captured as demonstrated in Section <a href="#section4" >4</a>.
+      </li>
+	  <li>
+		The Clock Condition guarantees that arguments in <a href="#fe05" >[Fe 05]</a> can go through in a distributed system. This time, type D of the Serializability Theorem is used to conclude serializability instead.
+      </li>
+	  <li>
+	    A flag system is sketched to realize the book-keeping algorithm in <a href="#ca08" >[Ca 08]</a>.
+	  </li>
+	  <li>
+		Different choices of distributed clocks and underlying database implementations give rise to different systems. And the flag system is also an alternative to the hybrid system employed in PostgreSQL. And the generalization is hence generic.
+      </li>
+	</ol>
+	
+	<p>
+	  So now we have a Serializable Snapshot Isolation implementation without using any long locks. Can we use long locks to replace the flags in the flag system? If we only replace the read flag or the write flag with a long lock, then we need a hybrid system that involves both flags and long locks. That is exactly what PostgreSQL does and the details are described in the wiki <a href="https://wiki.postgresql.org/wiki/Serializable" target="_blank">here</a>. So can we replace both with long locks? We can, but it turns out there is a catch.
+	</p>
+	
+	<p>
+	  From the implementation of the flag system, we know that a SIREAD lock can't be purged after its containing transaction T1 commits since another transaction T2 started before T1's commit may perform a write after T1's commit that conflicts this SIREAD lock. If T2 is long-running and we use a long lock as a SIREAD lock, this SIREAD lock will block writes conflicting with it for a very long time. This is certainly undesirable since Snapshot Isolation based technology always poses as one that writes don't need to wait for reads on the same data item. PostgreSQL‘s team knows about this and it is mentioned in its <a href="https://wiki.postgresql.org/wiki/Serializable" target="_blank">wiki</a>(in the section “4. Innovations”). I don't know if Cahill's team knows about it. It is not mentioned in <a href="#ca08" >[Ca 08]</a>.
+	</p>
+	
+	<p>
+	  Although this section is based on type D of the Serializability Theorem, you may also apply the method developed in it to a type B of the Serializability Theorem as long as the field versions are derived. Specifically, if you already have a distributed Snapshot Isolation implementation based on tuple versions, with one of the distributed clocks discussed in this section, all you have to do is to implement the primary algorithm and the flag system on top of it and achieve serializability. That's exactly what we could've done with alternative one. Concurrency control is not as fine-grained as with type D of the Serializability Theorem, but the alternation to your code is minimized.
+	</p>
+	
+	<p>
+	  In general, there could be other specific issues you need to work out when you try to develop a Serializable Snapshot Isolation implementation in a distributed database system. For example, in the second-tier serializability implementation I've developed for MySQL Cluster, I also work on a subsection called 'Durability of consistency' so that more guarantees are provided in the case a MySQL Cluster suffers a system-wide crash. Such work would require a lot of details about the system to fit in so that it could go through. If you are trying to work out an issue in the process and encounter problems, please don't hesitate to contact me if you think I may be able to help.
+	</p>
+	
+	<p>
+	  From what we've discussed in this section, depending on the specific implementation, it may or may not require long locks other than semaphores for concurrent writes to the same field. But in the case it may, we need a field level capable locking system for finest concurrency control.
+	</p>
+	
+  </div>
+  
 </div>
 
 <div id="section6">
 
-  <h2>6. Field level capable locking system</h2>
+  <h2>6. Field level capable locking system and a hybrid system</h2>
   
   <h3>TODO</h3>
 </div>
@@ -7655,10 +8772,10 @@ highly appreciated.
         If in the unfortunate case that after we implement a field level capable locking system and make sure our application is deployed in a memory-based system like MySQL Cluster, we still can't provide a satisfying answer to the second question, what should we do? Let's look at the following example.
       </p>
 	
-	  <div class="example" id="example27">
+	  <div class="example" id="example28">
 	
 	    <p>
-          <b>Example 27</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in MySQL Cluster.
+          <b>Example 28</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in MySQL Cluster.
         </p>
 	  
 	    <pre><b>
@@ -7680,7 +8797,7 @@ highly appreciated.
 	    </b></pre>
 	  
 	    <p>
-          There is clearly an item-based RW conflict from T1 to T2 and a WW conflict from T2 to T1. So the application of type B of the Serializability Theorem indicates this history H can't be a serializable history. However, if we compare the operations in H with those of serial history {T1, T2}, all the operations read or write the same values. The only discrepancy is the version of 'value' field written in the two histories.
+          There is clearly an item RW conflict from T1 to T2 and a WW conflict from T2 to T1. So the application of type B of the Serializability Theorem indicates this history H can't be a serializable history. However, if we compare the operations in H with those of serial history {T1, T2}, all the operations read or write the same values. The only discrepancy is the version of 'value' field written in the two histories.
         </p>
 	  
 	    <pre><b>
@@ -7694,7 +8811,7 @@ highly appreciated.
       </p>
 
       <p>
-        Most work in the literature focus on avoiding conflict loops to provide Serializability. Few of them discusses when such a loop exists, how, when and where inconsistency would show up. If we can answer some of these questions, maybe we can find a way to interfere with it so that inconsistency is suppressed to a bearable level as the Generalized Serializability Theorems and Example <a href="#example25" >25</a> have demonstrated(in both cases, inconsistencies don't show up in the underlying database). So in general, we may ask the third question as follows.
+        Most work in the literature focus on avoiding conflict loops to provide Serializability. Few of them discusses when such a loop exists, how, when and where inconsistency would show up. If we can answer some of these questions, maybe we can find a way to interfere with it so that inconsistency is suppressed to a bearable level as the Generalized Serializability Theorems and Example <a href="#example28" >28</a> have demonstrated(in both cases, inconsistencies don't show up in the underlying database). So in general, we may ask the third question as follows.
       </p>
 	
 	  <ol>
@@ -7714,10 +8831,10 @@ highly appreciated.
       While we are at the topic, let's explore the hot spot problem a little bit. We start with an example showing how bad it could be if 'optimistic technology' encountered the hot spot problem.
     </p>
 	
-	<div class="example" id="example28">
+	<div class="example" id="example29">
 	
 	  <p>
-	    <b>Example 28</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
+	    <b>Example 29</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
 	  </p>
 	  
 	  <pre><b>
@@ -7755,7 +8872,7 @@ highly appreciated.
     </p>
 
     <p>
-      Second, 'pessimistic technology' like MySQL Cluster usually uses time-outs to detect deadlocks. This mechanism will time-out those statements that have been waiting too long for a lock. If we employ a re-try mechanism to restart these dead-lock victims, this effectively re-generates the cascading abortion scenario discussed in Example <a href="#example26" >26</a>.
+      Second, 'pessimistic technology' like MySQL Cluster usually uses time-outs to detect deadlocks. This mechanism will time-out those statements that have been waiting too long for a lock. If we employ a re-try mechanism to restart these dead-lock victims, this effectively re-generates the cascading abortion scenario discussed in Example <a href="#example29" >29</a>.
     </p>
 	
 	<p>
@@ -7787,13 +8904,13 @@ highly appreciated.
     </p>
 	
 	<p>
-	  In my opinion, the hot spot problem is really a resource problem, in which people are competing to gain control of precious resources, like the super bowl tickets in Example <a href="#example26" >26</a>. So the real solution is to increase resource providing. Unfortunately that is not always possible, like the stadium for the super bowl match has only a limited number of seats. When it is impossible, it is the database application developer who will catch the ball. Since it is not a computer science problem, we can't guarantee solving it completely by applying computer science methods and sometimes providing an alleviation is already the optimal solution. One approach to this end is to distribute the load to a few sites so that at each site the race become less intensive.
+	  In my opinion, the hot spot problem is really a resource problem, in which people are competing to gain control of precious resources, like the super bowl tickets in Example <a href="#example29" >29</a>. So the real solution is to increase resource providing. Unfortunately that is not always possible, like the stadium for the super bowl match has only a limited number of seats. When it is impossible, it is the database application developer who will catch the ball. Since it is not a computer science problem, we can't guarantee solving it completely by applying computer science methods and sometimes providing an alleviation is already the optimal solution. One approach to this end is to distribute the load to a few sites so that at each site the race become less intensive.
 	</p>
 	
 	<div class="example">
 	
 	  <p>
-        <b>Example 28(Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
+        <b>Example <a href="#example29">29</a> (Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
       </p>
 
       <p>
@@ -7827,7 +8944,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in this example, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
+      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in this Example <a href="#example29" >29</a>, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
     </p>
 	
 	<pre><b>
@@ -7985,6 +9102,10 @@ highly appreciated.
 <b>[Fe 05]</b> Fekete, A., Liarokapis, D., O'Neil, E., O'Neil, P., Shasha, D. [2005]. “<i>Making Snapshot Isolation Serializable</i>”, <a href="https://dl.acm.org/journal/tods" target="_blank">ACM Transactions on Database Systems</a>, June 2005.
 </div>
 
+<div id="ga94" class="cite">
+<b>[Ga 94]</b> Gamma, E., Helm, R., Johnson, R., Vlissides, J. [1994]. “<i>Design Patterns: Elements of Reusable Object-Oriented Software</i>”, ISBN 0-201-63361-2.
+</div>
+
 <div id="gr93" class="cite">
 <b>[Gr 93]</b> Gray, J., Reuter, A. [1993]. “<i>Transaction Processing: concepts and techniques</i>”, ISBN 1-55860-190-2.
 </div>
@@ -8039,7 +9160,7 @@ highly appreciated.
   </p>
 
   <p>
-    If only consistency, not performance matters, the helper program available <a href="https://github.com/creamyfish/conflict_parser" target="_blank">here</a> will do the job for you. Based on its output, set up the prevention measures as needed and it will guarantee consistency by type B of the Serializability Theorem if timestamp fields and auto-increment fields are not present. Read locks on some of the fields can be skipped if they are accompanied by a field write or the conflicting writes are insertions since these are not a real conflict. For granular locking necessary to fence off predicate-based RW conflicts, make sure to modify your application so that the rows for tables like t_s_n, t_o_n and t_d1_n in Example <a href="#example16" >16</a> are inserted and deleted in the appropriate transactions.
+    If only consistency, not performance matters, the helper program available <a href="https://github.com/creamyfish/conflict_parser" target="_blank">here</a> will do the job for you. Based on its output, set up the prevention measures as needed and it will guarantee consistency by type B of the Serializability Theorem if timestamp fields and auto-increment fields are not present. Read locks on some of the fields can be skipped if they are accompanied by a field write or the conflicting writes are insertions since these are not a real conflict. For granular locking necessary to fence off predicate RW conflicts, make sure to modify your application so that the rows for tables like t_s_n, t_o_n and t_d1_n in Example <a href="#example16" >16</a> are inserted and deleted in the appropriate transactions.
   </p>
   
   <p>
@@ -8490,10 +9611,10 @@ highly appreciated.
       Next, let's demonstrate a weird Read-Committed isolation level to which we can't apply these theorems in the following example.
     </p>
 	
-	<div class="example" id="example29">
+	<div class="example" id="example30">
 	  
 	  <p>
-	    <b>Example 29</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
+	    <b>Example 30</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
       </p>
 	  
 	  <p>
@@ -8518,11 +9639,11 @@ highly appreciated.
   <h2>Appendix B: The 'happened before' partial order</h2>
   
   <p>
-    The 'happened before' partial order is inspired by one with the same name in <a href="#es76" >[La 78]</a>. In <a href="#es76" >[La 78]</a>, an event is represented as a point in time and a node in a distributed system is considered to be a process consisting of a sequence of events in a total order since in the good old days processes are still single-threaded. Between nodes, events are also connected with a type II edge as in our version of the 'happened before' partial order.
+    The 'happened before' partial order is inspired by one with the name “happened before” in <a href="#la78" >[La 78]</a>. In <a href="#la78" >[La 78]</a>, an event is represented as a point in time and a node in a distributed system is considered to be a process consisting of a sequence of events in a total order since in the good old days processes are still single-threaded. Between nodes, events are also connected with a type II edge as in the 'happened before' partial order. Notice a 'node' here could be the CPU, the memory unit, or a input-output channel if a single computer is viewed as a distributed system, as long as each of these is a process.
   </p>
   
   <p>
-    In this article we, instead, device an event as a time interval so that events in a process can overlap since nowadays processes are all multi-threaded and in a node there are usually more than one process. This way, two events from two different threads in a node don't have to be one after another in the order of time and it makes more sense. Also, when two concurrent transactions – executed by two threads – release and acquire the same lock in that order, this pair of events can be represented by a type I edge. If we were to simply generalize the original 'happened before' partial order to the thread case and interpret inter-thread messaging with type II edges, we would see type II edges inside a node and the model became more complex. However, this may be a better approach in some cases, we will see why in Appendix <a href="#appD" >D</a> when we examine CockroachDB.
+    In this article we, instead, device an event as a time interval so that events in a process can overlap since nowadays processes are all multi-threaded and in a node there are usually more than one process in the distributed system(For example, in MySQL Cluster, there is an 'angel' process which overlooks the primary process and restarts it if it fails). This way, two events from two different threads in a node don't have to be one after another in the order of time and it makes more sense. Also, when two concurrent transactions – executed by two threads – release and acquire the same lock in that order, this pair of events can be represented by a type I edge. If we were to simply generalize the original “happened before” partial order in <a href="#la78" >[La 78]</a> to the thread case and interpret inter-thread messaging with type II edges, we would see type II edges inside a node and the model became more complex. However, this may be a better approach in some cases, we will see why in Appendix D when we examine CockroachDB.
   </p>
   
   <p>
@@ -8580,7 +9701,7 @@ highly appreciated.
   <h2>Appendix D: Survey of consistency implementations in distributed database systems</h2>
   
   <p>
-    In this appendix, we will survey some interesting implementations of distributed databases so that we may apply the theory and techniques developed in this article to them. We prefer memory-based databases, but we might also examine those that are disk-based. Along the way, more interesting implementation might be added to this appendix as they show up.
+    In this appendix, we will survey some interesting implementations of distributed databases so that we may apply the theory and techniques developed in this article to them. We prefer memory-based databases, but we will also examine those that are disk-based. Along the way, more interesting implementations might be added to this appendix as they show up.
   </p>
   
   <div id="sectionD.1">
@@ -8654,7 +9775,7 @@ highly appreciated.
     <h3>D.2 OceanBase</h3>
 	
 	<p>
-	  OceanBase is a product of Alibaba. It seems to me it borrows a lot of wisdom from Oracle, in that it implements a Snapshot Isolation a lot like Oracle's, except that it is a distributed system; and some wisdom from Google's Spanner, in that it uses a Paxos system to replicate data too.  OceanBase's implementation of Snapshot Isolation is different from that of Google's Spanner's in that it uses a machine generated increasing sequence, instead of a clock, to timestamp the transactions. For a standalone system, the generation of such a sequence is straight forward. But OceanBase is a distributed system, the increasing sequence must be generalized to a global version. OceanBase deploys specific servers, so called Global Timestamp Service(GTS) in its nomenclature, for that purpose. GTS provides an increasing sequence for timestamp purpose for each Tenant(synonym of database instance in OceanBase's nomenclature, roughly corresponds a store in their Amazon.com like on-line store application called Tmall, usually consists of one leader and two replicas, located on three machines) and there are as many of these sequences as there are Tenants. Such a generalization offers about two million timestamps per second for each Tenant, which is usually much more than a store's need. Then for only transactions accessing the same Tenant, Snapshot Isolation is used to provide consistency. In other words, although Oceanbase's architecture is a distributed one, the unit that implements Snapshot Isolation is really standalone, namely, in the leader of a tenant. One advantage of using an increasing sequence to provide timestamp service is that realizing 'external consistency' becomes trivial.
+	  OceanBase is a product of Alibaba. It seems to me it borrows a lot of wisdom from Oracle, in that it implements a Snapshot Isolation a lot like Oracle's, except that it is a distributed system; and some wisdom from Google's Spanner, in that it uses a variant of Paxos system called Raft to replicate data too.  OceanBase's implementation of Snapshot Isolation is different from that of Google's Spanner's in that it uses a machine generated increasing sequence, instead of a clock, to timestamp the transactions. For a standalone system, the generation of such a sequence is straight forward. But OceanBase is a distributed system, the increasing sequence must be generalized to a global version. OceanBase deploys specific servers, so called Global Timestamp Service(GTS) in its nomenclature, for that purpose. GTS provides an increasing sequence for timestamp purpose for each Tenant(synonym of database instance in OceanBase's nomenclature, roughly corresponds a store in their Amazon.com like on-line store application called Tmall, usually consists of one leader and two replicas, located on three machines) and there are as many of these sequences as there are Tenants. Such a generalization offers about two million timestamps per second for each Tenant, which is usually much more than a store's need. Then for only transactions accessing the same Tenant, Snapshot Isolation is used to provide consistency. In other words, although Oceanbase's architecture is a distributed one, the unit that implements Snapshot Isolation is really standalone, namely, in the leader of a tenant. One advantage of using an increasing sequence to provide timestamp service is that realizing 'external consistency' becomes trivial.
 	</p>
 	
 	<p>
@@ -8662,7 +9783,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  Besides this limitation of timestamp service, OceanBase also suffers the same problems Snapshot Isolation does, such as write-skew anomalies and cascading abortion. That said, OceanBase has survived Alibaba's annual sale on Nov. 11th(an online version of Black Friday Sale). It also occupies the first place in the TPCC benchmark list for clusters. This is impressive, especially if you are building an application like Amazon.com. Of course, if in your application SQL statements are executed upon data that span across multiple data nodes(say, data can't fit in a single data node), this benchmark result may not be meaningful for you since OceanBase doesn't support this kind of statements naturally due to its limitation. Its timestamp service, however, doesn't require hardware provision like GPS clocks and atomic clocks that Google's Spanner does and hence its deployment could be more cost-efficient when it applies.
+	  Besides this limitation of the timestamp service, OceanBase also suffers the same problems Snapshot Isolation does, such as write-skew anomalies and cascading abortion. That said, OceanBase has survived Alibaba's annual sale on Nov. 11th(an online version of Black Friday Sale). It also occupies the first place in the TPCC benchmark list for clusters. This is impressive, especially if you are building an application like Amazon.com. Of course, if in your application SQL statements are executed upon data that span across multiple data nodes(say, data can't fit in a single data node), this benchmark result may not be meaningful for you since OceanBase doesn't support this kind of statements naturally due to its limitation. Its timestamp service, however, doesn't require hardware provision like GPS clocks and atomic clocks that Google's Spanner does and hence its deployment could be more cost-efficient when it applies.
 	</p>
 	
 	<p>
@@ -8679,7 +9800,7 @@ highly appreciated.
     </p>
   
 	<p>
-      CockroachDB is a distributed database system that uses a global clock called Hybrid Logical Clock(HLC) as described in <a href="#ku14" >[Ku 14]</a> for its serializability implementation. HLC is a combination of the logical clock provided by Lamport in <a href="#la78" >[La 78]</a>, and the physical clock provided by NTP. Each timestamp is in the form of (l, c), where l is in the form of timestamp provided by NTP and c is a counter. The primary algorithm for maintaining such a clock is given as follows:
+      CockroachDB is a distributed database system that uses a global clock called Hybrid Logical Clock(HLC) as described in <a href="#ku14" >[Ku 14]</a> for its serializability implementation. HLC is a combination of the logical clock provided by Lamport in <a href="#la78" >[La 78]</a>, and the physical clock provided by NTP. Each timestamp is in the form of (l, c), where l is the timestamp returned by NTP and c is a counter. The primary algorithm for maintaining such a clock is given as follows:
     </p>
 	
 	<pre><b>
@@ -8703,7 +9824,7 @@ highly appreciated.
 	</b></pre>
 	
 	<p>
-      Here sub-script j represents an arbitrary server participating in this clock protocol, sub-script m represents the server from where the message(also represented as m) is sent, and pt represents the physical time returned by the NTP protocol. As we can see, this clock protocol stores the latest physical clock it can sense in l, which is usually enough to describe the clock advancement; if it is not, c is there for that purpose. Notice that such a clock deviates from a traditional one, which usually assigns a number to each event. The order between the timestamps is the lexicographic order, which is a total order. And in particular, we have
+      Here sub-script j represents an arbitrary server participating in this clock protocol, sub-script m represents the server from which the message(also represented as m) is sent, and pt represents the physical time returned by the NTP protocol. As we can see, this clock protocol stores the latest physical clock it can sense in l, which is usually enough to describe the clock advancement; if it is not, c is there for that purpose. Notice that such a clock deviates from a traditional one, which usually assigns a number to each event. The order between the timestamps is the lexicographic order, which is a total order. And in particular, we have
     </p>
 	
 	<pre><b>
@@ -8727,15 +9848,15 @@ highly appreciated.
 	</ol>
 	
 	<p>
-      Remark: For the 'happened before' partial order in <a href="#ku14" >[Ku 14]</a>, we can't just use the one described in <a href="#la78" >[La 78]</a> since <a href="#la78" >[La 78]</a>'s is for a system with single-threaded processes and today's systems are almost always multi-threaded. We should use the variant where events inside a thread are represented as points in time and two events connected by an inter-thread message is interpreted as a type II edge as mentioned in Appendix <a href="#appB" >B</a>. If we were to use the variant as in the rest of this article, some of the results in <a href="#ku14" >[Ku 14]</a>, like theorem 4, may not be easily proved. Notice that using this variant doesn't affect the correctness of the serializability theorems since it is only used in the timestamp service in of the system; for the serializability theorems, we still use the variant as in the rest of this article. This is a perfect example where we may interpret the 'happened before' partial order in different ways mathematically.
+	  Remark: For the “happened before” partial order in <a href="#ku14" >[Ku 14]</a>, we can't just use the one described in <a href="#la78" >[La 78]</a> since <a href="#la78" >[La 78]</a>'s is for a system with single-threaded processes and today's systems are almost always multi-threaded. We should use the variant where events inside a thread are represented as points in time and two events connected by an inter-thread message is interpreted as a type II edge as mentioned in Appendix B. If we were to use the variant 'happened before' as in the rest of this article, some of the results in <a href="#ku14" >[Ku 14]</a>, like theorem 4, may not be easily proved. Notice that using this “happened before” variant doesn't affect the correctness of the serializability theorems since it is only used in the timestamp service in of the system; for the serializability theorems, we still use 'happened before' as in the rest of this article. This is a perfect example where we may interpret the temporal order in a distributed system in different ways mathematically.
+	</p>
+	
+	<p>
+      Property 1, the so-called 'Clock Condition' in <a href="#la78" >[La 78]</a>, is extremely important, for example, if we were to use it to replace the expansive distributed timing service in Google's Spanner to generate a consistent snapshot for the 'optimistic' component.
     </p>
 	
 	<p>
-      Property 1, the so-called 'clock condition' in <a href="#la78" >[La 78]</a>, is extremely important, for example, if we were to use it to replace the expansive distributed timing service in Google's Spanner to generate a consistent snapshot for the 'optimistic' component.
-    </p>
-	
-	<p>
-      Property 2 suggests that this clock heavily depends on the physical clock provided by NTP. On the one hand, this means things like violation of external consistency becomes less visible for clients if NTP time are synced to be close to real clock time; on the other hand, this also implies if NTP synchronization is seriously off, it might impact this clock protocol.
+      Property 2 suggests that this clock heavily depends on the physical clock provided by NTP. On the one hand, this means things like violation of external consistency becomes less visible for clients if NTP time is synced to be close to real clock time; on the other hand, this also implies if NTP synchronization is seriously off, it might impact this clock protocol.
     </p>
 	
 	<p>
@@ -8747,7 +9868,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-      The developers of CockroachDB seem to agree with me on this. They deal with it with the following rule: when a node detects that its clock is out of sync with at least half of the other nodes in the cluster by 80% of maximum offset allowed, it crashes immediately. This approach pertains to the primary algorithm all the time, although it might imply the algorithm operates with a larger Epsilon sometimes(it really depends on the relation between Epsilon and the maximum offset). This implies any property that doesn't involve Epsilon, in particular property 1, remains true. So if we were to use HLC for an implementation of Serializable Snapshot Isolation or Spanner's consistent snapshot, they will both remain correct with unstable situations like drift-away servers since it is equivalent to a clock protocol that operates with a larger Epsilon. And the issue described in the last paragraph will also go away if we choose the variable for c carefully based on the maximum offset instead.
+      It seems the developers of CockroachDB seem agree with me on this. They deal with it with the following rule: when a node detects that its clock is out of sync with at least half of the other nodes in the cluster by 80% of maximum offset allowed, it crashes immediately. This approach pertains to the primary algorithm all the time, although it might imply the algorithm operates with a larger Epsilon sometimes(it really depends on the relation between Epsilon and the maximum offset). This implies any property that doesn't involve Epsilon, in particular property 1, remains true. So if we were to use HLC for an implementation of Serializable Snapshot Isolation or Spanner's consistent snapshot, they will both remain correct with unstable situations like drift-away servers since it is equivalent to a clock protocol that operates with a larger Epsilon. And the issue described in the last paragraph will also go away if we choose the variable for c carefully based on the maximum offset instead.
     </p>
 	
 	<p>
@@ -8790,6 +9911,12 @@ highly appreciated.
 	  Remark: The first time I encountered a timestamp-based serializability implementation was in <a href="#si02" >[Si 02]</a> when I explored technical paths of achieving serializability more than a decade ago. Comparing with that, there are two advancements in CockroachDB's implementation. The first one, of course, is the adoption of distributed timestamp service HLC so that serializability can be discussed in a distributed database system. The second one is the use of a multi-version system so that transaction with an earlier timestamp than that of the field it's trying to read doesn't have to be aborted. The starvation issue was also present in <a href="#si02" >[Si 02]</a>'s implementation. I couldn't resolve it and that was one major reason I turned to 'optimistic technology' and 'pessimistic technology' for a solution. Today I still can not. I am open to any suggestion to resolve it to make this implementation more sensible.
 	</p>
 	
+  </div>
+  
+  <div id="sectionD.4">
+    <h3>D.4 TiDB</h3>
+	
+	<h3>TODO</h3>
   </div>
   
 </div>
