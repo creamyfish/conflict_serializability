@@ -151,8 +151,15 @@ tr:nth-child(even) {
 	  <dd>
 	    <dl>
 		  <dt>
-	        <a href="#section3.7.1">3.7.1 MySQL InnoDB: TODO</a>
+	        <a href="#section3.7.1">3.7.1 MySQL InnoDB</a>
 	      </dt>
+		  <dd>
+		    <dl>
+			  <dt>
+			    <a href="#section3.7.1.1">3.7.1.1 Relation between consistency, durability and durability of consistency</a>
+			  </dt>
+			</dl>
+		  </dd>
 		</dl>
 	  </dd>
 	</dl>
@@ -2647,6 +2654,10 @@ highly appreciated.
 	<pre><b>
       Event of starting the commit phase of T1 → Event of starting the commit phase of T2.                                                               
 	</b></pre>
+	
+	<p>
+	  For a Read-Only transaction, the event of starting the commit phase of it may be chosen to be one that 'happened after' the execution of SQL statements(hence 'happened after' any lock acquiring event) and 'happened before' any lock releasing event since two-phase locking is employed by NDB Cluster.
+	</p>
 	
 	<p>
       So given a history H in NDB Cluster, for both item and predicate RW conflict between T1 and T2 in H, we've devised a way so that the following condition is satisfied:
@@ -6929,6 +6940,10 @@ highly appreciated.
 	</p>
 	
 	<p>
+	  This conclusion remains true if we instead are applying the Generalized Serializability Theorems to our application since it is like applying type B of the Serializability Theorem to the Read-Write transactions, for example. And they are the only transactions that can affect the underlying database. For the Ramification Theorems, the conclusion remains true on Ram(B)'.
+	</p>
+	
+	<p>
 	  For traditional replication where system-wide changes are replicated to a slave using a binlog, the slave always maintains a consistent state by type B of the Serializability Theorem. The reason is that all the changes in an 'epoch' in all the data nodes in the system is grouped into an 'epoch' transaction, which contains all the writes by transactions in this 'epoch', before it's replicated to the slave according to Frazer Clement's article. From the arguments of the last few paragraphs, this guarantees consistency if the replication runs to its end.
 	</p>
 	
@@ -7016,18 +7031,86 @@ highly appreciated.
     <h3>3.7 Application to standalone systems</h3>
 	
     <p>
-	  Although the method developed in this article emphasize distributed database systems, it is backward compatible and can be applied to standalone ones. In this subsection, we'll explore how to do that in various standalone systems, starting with MySQL InnoDB.
+	  Although the method developed in this article emphasizes distributed database systems, it is backward compatible with and can be applied to standalone systems. In this subsection, we'll explore how to do that in various standalone systems, starting with MySQL InnoDB. If other than consistency, the expected performance profile for your application is at most a few thousand tps, you are at the right place.
 	</p>
 	
 	<div id="section3.7.1">
   
       <h4>3.7.1 MySQL InnoDB</h4>
 	  
-	</div>
+	  <p>
+	    In the Read-Committed isolation level of MySQL InnoDB, as long as we choose a commit event to be one that 'happened after' execution of SQL statements, but 'happened before' the release of any lock in a transaction to replace the start event of the commit phase in Theorem <a href="#theorem1">1</a>, Theorem <a href="#theorem2">2</a> and Example <a href="#example14">14</a>, the arguments there can go through. This implies we may achieve serializability for any history executed under this isolation level as demonstrated in Example <a href="#example16">16</a>. Please use the <a href="https://github.com/creamyfish/conflict_parser" target="_blank">conflict_parser</a> helper program to generate the tables of potential conflicts to start with. In general, this method could reduce locks to a minimum level and should out-perform MySQL's serializable isolation level. You may also apply the Generalized Serializability Theorems or the Ramification Theorems to your application if inconsistencies in some reads are allowed or need to constrain inconsistencies to be within a few columns. Please refer to Example <a href="#example21">21</a> for a demonstration of applying the Ramification Theorems.
+	  </p>
+	  
+	  <p>
+	    However, there is difficulty mounting such a serializability implementation to the Repeatable-Read isolation level of MySQL InnoDB. From the specification <a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html" target="_blank">here</a>, it seems there is trouble for it to process locking statements and non-locking read simultaneously. This is absolutely a pity! I was hoping its gap lock implementation could render Theorem <a href="#theorem2">2</a> unnecessary.
+	  </p>
+	  
+	  <div id="section3.7.1.1">
+	  
+	    <h5>3.7.1.1 Relation between consistency, durability and durability of consistency</h5>
+	  
+	    <p>
+	      In the last sub-section, we went a long way to prove that NDB Cluster satisfies durability of consistency. Namely, if it suffers a system crash and is later recovered, its recovered database state is consistent. It turns out the reason of all that trouble is because NDB Cluster is NOT durable and this conclusion is asserted by the following
+	    </p>
+		
+		<div class="theorem" id="theorem6">
 	
-	<p>
-	  TODO
-	</p>
+	      <b>Theorem 6</b>: Consistency + durability => durability of consistency.
+		  
+	    </div>
+		
+		<div class="proof">
+		
+		  <p>
+		    Proof: Durability implies that when a system is recovered from a disaster, all the committed transactions will survive and the effects of them are reflected in the database correctly. The system is also consistent, which implies if a history is executed successfully, it will leave an originally consistent database in a consistent state. Now consider the state the database system is in when it crashes: some transactions have already committed and some are still in progress. Let H be the history that has led to such a state and modify all the still in-progress transactions by adding an 'abort;' statement to each of them and called this new history H'. If the system had not crashed, H' would finish execution and leave the underlying database in a consistent state; but this state is exactly the recovered state for the  execution of H. Hence the proof is completed.
+	      </p>
+		
+		  <pre><b>
+	                                                                                                       ## 
+	      </b></pre>
+		
+		</div>
+	  
+	    <div class="theorem">
+	
+	      <b>Corollary 1</b>: The serializability implementation(and also when the Generalized Serializability Theorems or the Ramification Theorems are applied instead) based on MySQL InnoDB's Read-Committed isolation level satisfies durability of consistency.
+		  
+	    </div>
+	    
+		<div class="proof">
+		
+		  <p>
+		    Proof: Durability of MySQL InnoDB is provided by Write-Ahead-Logging and hence the conclusion when consistency is in place.
+		  </p>
+		
+		  <pre><b>
+	                                                                                                       ## 
+	      </b></pre>
+		
+		</div>
+	    
+	    <div class="theorem">
+	
+	      <b>Corollary 2</b>: If battery-backed memory is used to provide durability to NDB Cluster, the serializability implementation(and also when the Generalized Serializability Theorems or the Ramification Theorems are applied instead) based on NDB Cluster's Read-Committed isolation level satisfies durability of consistency.
+		  
+	    </div>
+	    
+		<div class="proof">
+		
+		  <p>
+		    Proof: Similar to Corollary 1.
+          </p>
+		
+		  <pre><b>
+	                                                                                                       ## 
+	      </b></pre>
+		
+		</div>
+		
+	  </div>
+	  
+	</div>
   
   </div>
   	
@@ -9687,7 +9770,7 @@ highly appreciated.
   </p>
 
   <p>
-    This proof can be generalized to associating one event to each transaction such that a conflict loop implies an event loop in the 'happened before' partial order. In the serializability implementation for NDB Cluster, we chose the 'commit' event in each transaction for it to work out, but actually any event that 'happened after' the execution of SQL statements in a transaction(hence 'happened after' any lock acquiring event) and 'happened before' any lock releasing event could also do the job.
+    This proof can be generalized to associating one event to each transaction such that a conflict loop implies an event loop in the 'happened before' partial order. In the serializability implementation for NDB Cluster, we chose the 'commit' event in each transaction for it to work out, but actually any event that 'happened after' the execution of SQL statements in a transaction(hence 'happened after' any lock acquiring event) and 'happened before' any lock releasing event could also do the job. In particular, in any system that implements two-phase locking, such an event exists.
   </p>
   
   <p>
@@ -9821,7 +9904,7 @@ highly appreciated.
   </div>
   
   <div id="sectionD.3">
-    <h3>D.3 CockroachDB</h3>
+    <h3>D.3 CockroachDB</h3> <span style="color:red">(To BE UPDATED. PLEASE CHECK BACK IN A FEW DAYS.)</span>
 	
 	<p>
       CockroachDB implements a serializable isolation level and the following analysis is based on <a href="#tr16" >[Tr 16]</a>.
@@ -10096,11 +10179,23 @@ highly appreciated.
 	</p>
 	
 	<p>
+	  In the case 'dangerous structure's do exist, we need to use techniques like materialization or promotion to eliminate them. Please refer to <a href="#fe05" >[Fe 05]</a> for an exposure of these techniques. Notice that joins need to be re-written as equivalent statements as in the serializability implementation I've developed for NDB Cluster before conflict analysis.
+	</p>
+
+    <p>	
 	  We may also apply the method I've developed in Section 1 to achieve serializability to this specific Snapshot Isolation implementation with materialization and promotion since it can be viewed as a generic Read-Committed isolation level. But it is apparently inferior comparing with Fekete's method, so I won't elaborate on it any more.
 	</p>
 	
 	<p>
-	  A transaction under TiDB's Snapshot Isolation reads the most recently committed tuple version is guaranteed by the following arguments: A transaction T1 reading at timestamp s1 and a transaction T2 that committed at timestamp s2 < s1; we will show that T1 sees T2’s writes. Since s2 < s1, we know that the TSO gave out s2 before or in the same batch as s1; hence, T2 requested s2 before T1 received s1. We know that T1 can’t do reads before receiving its start timestamp s1 and that T2 wrote locks before requesting its commit timestamp s2 . Therefore, the above property guarantees that T2 must have at least written all its locks before T1 did any reads; T1’s Get() will see either the fully committed write record or the lock, in which case T1 will block until the lock is released. Either way, T2’s write is visible to T1’s Get(). These arguments can be found <a href="https://tikv.org/deep-dive/distributed-transaction/timestamp-oracle/" target="_blank">here</a>. Notice TiDB provides this guarantee with the following key properties of the system: monotonicity of timestamp service, replication of locks for optimistic transaction by the Raft system, reads waiting for locks to be released.
+	  And of course you may apply the Generalized Serializability Theorems to enhance performance while guaranteeing consistency of the underlying database, if inconsistencies in some reads are OK; in that case, please use the <a href="https://github.com/creamyfish/conflict_parser" target="_blank">conflict_parser</a> helper program to get you started analyzing the conflicts. Or you may use the Ramification Theorems to constrain inconsistencies to Ram(B). Please refer to Example <a href="#example21" >21</a> for a demonstration of the calculation of Ram(B).
+	</p>
+	
+	<p>
+	  A transaction under TiDB's Snapshot Isolation reads the most recently committed tuple version is guaranteed by the following arguments: a transaction T1 reading at timestamp s1 and a transaction T2 that committed at timestamp s2 < s1; we will show that T1 sees T2’s writes. Since s2 < s1, we know that the TSO gave out s2 before or in the same batch as s1; hence, T2 requested s2 before T1 received s1. We know that T1 can’t do reads before receiving its start timestamp s1 and that T2 wrote locks before requesting its commit timestamp s2 . Therefore, the above property guarantees that T2 must have at least written all its locks before T1 did any reads; T1’s Get() will see either the fully committed write record or the lock, in which case T1 will block until the lock is released. Either way, T2’s write is visible to T1’s Get(). These arguments can be found <a href="https://tikv.org/deep-dive/distributed-transaction/timestamp-oracle/" target="_blank">here</a>. Notice TiDB provides this guarantee with the following key properties of the system: monotonicity of timestamp service, replication of locks for optimistic transaction by the Raft system, reads waiting for locks to be released.
+	</p>
+	
+	<p>
+	  Durability of consistency is guaranteed by Theorem <a href="#theorem6" >6</a> since durability is provided by Raft.
 	</p>
 	
 	<p>
@@ -10151,10 +10246,6 @@ highly appreciated.
 	
 	<p>
 	  Consider the situation when T2 is committing and 2PC starts to release locks acquired. In this releasing process, there is a chance that l2 has already been released, but the write lock for the insert hasn't. If this status lasts long enough, T1 may acquire l1 and start the execution of the locking read. Since the insert doesn't block this locking read, it will read the the database state before the insertion. So we have a predicate RW conflict between T1 and T2 and yet l2 → l1. This refutes the 'Only If' part of Theorem <a href="#theorem2" >2</a>.
-	</p>
-	
-	<p>
-	  Durability of consistency: TODO
 	</p>
 	
 	<p>
