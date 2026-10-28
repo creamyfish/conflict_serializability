@@ -162,6 +162,22 @@ tr:nth-child(even) {
 		  </dd>
 		</dl>
 	  </dd>
+	  <dt>
+	    <a href="#section3.8">3.8 Other correctness criteria</a>
+	  </dt>
+	  <dd>
+	    <dl>
+		  <dt>
+	        <a href="#section3.8.1">3.8.1 Linearizability</a>
+	      </dt>
+		  <dt>
+	        <a href="#section3.8.2">3.8.2 External consistency </a>
+	      </dt>
+		</dl>
+	  </dd>
+	  <dt>
+	    <a href="#section3.9">3.9 Applying the methodology to database applications(TODO)</a>
+	  </dt>
 	</dl>
   </dd>
   <dt>
@@ -273,6 +289,20 @@ tr:nth-child(even) {
 	  <dt>
 	    <a href="#section7.3">7.3 Security implications</a>
 	  </dt>
+	  <dd>
+	    <dl>
+		  <dt>
+	        <a href="#section7.3.1">7.3.1 Consistency related hacks and incidents</a>
+	      </dt>
+		  <dd>
+	        <dl>
+		      <dt>
+	            <a href="#section7.3.1.1">7.3.1.1 Amazon's DNS incident</a>
+	          </dt>
+		    </dl>
+	      </dd>
+		</dl>
+	  </dd>
 	</dl>
   </dd>
   <dt>
@@ -1184,8 +1214,12 @@ tr:nth-child(even) {
     </p>
 
     <p>
-      We assume that when a transaction reports back to the API coordinator its state as committed, all of its modifications are available for reading. This assumption is reasonable since distributed systems usually use two phase commit as their commit logic; in two phase commit a local component commits its modifications, hence ready for reading, before it sends the committed state back to the coordinator. For example, this assumption is satisfied by NDB Cluster and one can see that when we explain the commit logic of NDB Cluster in next section.
+      We assume that when a transaction reports back to the API coordinator its state as committed, all of its modifications are available for reading.
     </p>
+	
+	<p>
+	  In general, this assumption is reasonable since distributed systems usually use two phase commit as their commit logic; in two phase commit a local component commits its modifications, hence ready for reading, before it sends the committed state back to the coordinator. For example, this assumption is satisfied by NDB Cluster and one can see that when we explain the commit logic of NDB Cluster in next section. But there is one exception. If data is replicated, then when a transaction reports back to the API coordinator its state as committed, it may only mean that it is available in the primary replica. So if the read is sent to a secondary replica, the committed write may not be visible there yet. In this case, we need to further require a transaction in the serially executed sequence to delay its execution until the previous one's writes have been propagated to all replicas(like waiting for a reasonably amount of time for cross-node communication to finish) so that this assumption is still sound. 
+	</p>
 
     <p>
       With this assumption, it's easy to see that a later transaction in the execution sequence sees the latest modifications in transactions before it: the time for the modifications of a previous transaction to be available is before the time for the commit message to reach the coordinator, which is before the time to start a later transaction, which is once again before the time the reading happens; and since the transaction reads the latest available modification, it reads the latest modifications in transactions before it.
@@ -2385,7 +2419,7 @@ highly appreciated.
 	  </b></pre>
 	  
 	  <p>
-        Here an arrow means that two events connected by it are related in the 'happened before' partial order. We want to emphasize that his argument clearly applies to the 'decision set' case.
+        Here an arrow means that two events connected by it are related in the 'happened before' partial order. We want to emphasize that this argument clearly applies to the 'decision set' case.
       </p>
 
       <p>
@@ -2557,7 +2591,7 @@ highly appreciated.
 	
 	<div class="theorem" id="theorem2">
 	
-        <b>Theorem 2</b>: Let T1 and T2 be transactions in history H. And further let s1 be a statement in T1 and s2 be a statement in T2 such that s2 could give rise to an IN operation conflicting with s1's predicate read. A lock l1 is placed right before s1 in T1 and another lock l2 is placed at the end of T2, so that l1 conflicts with l2. For example, l1 could be a shared read lock on a tuple and l2 could be a write lock on the same tuple. Assuming a predicate-based conflict between s1 and s2(hence between T1 and T2) exists, then it is a predicate RW conflict if and only if l1 'happened before' l2, assuming that appropriate locks have been placed in the predicate read of s1 as in the OUT operation case.
+        <b>Theorem 2</b>: Let T1 and T2 be transactions in history H. And further let s1 be a statement in T1 and s2 be a statement in T2 such that s2 could give rise to an IN operation conflicting with s1's predicate read. A lock l1 is placed right before s1 in T1 and another lock l2 is placed at the end of T2, so that l1 conflicts with l2. For example, l1 could be a shared read lock on a tuple and l2 could be a write lock on the same tuple. Assuming a predicate-based conflict between s1 and s2(hence between T1 and T2) exists, then it is a predicate RW conflict if and only if l1 'happened before' l2. Appropriate locks have been placed in the predicate read of s1 as in the OUT operation case.
 		
 	</div>
 	
@@ -7021,7 +7055,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  One interesting question is: is there a system that is consistent, but in which durability of consistency could be violated? I don't have a database example for that. But the following <a href="https://msrc.microsoft.com/blog/2023/09/results-of-major-technical-investigations-for-storm-0558-key-acquisition/" target="_blank">incident</a> that resulted in Raimondo, US secretary of commerce's email account being hacked certainly smells like it. The key piece of info there is “The crash dumps, which redact sensitive information, should not include the signing key. In this case, <span style="color:red">a race condition</span> allowed the key to be present in the crash dump (this issue has been corrected).”. The consumer signing system in question is not a fault-tolerant system. Faults show up in a fault-tolerant system as inconveniences, not mishaps. 
+	  One interesting question is: is there a system that is consistent, but in which durability of consistency could be violated? I don't have a database example for that. But the following <a href="https://www.anvilogic.com/threat-reports/storm-0558-microsoft-breach" target="_blank">incident</a> that resulted in Raimondo, US secretary of commerce's email account being hacked certainly smells like it. The key piece of info there is “The crash dumps, which redact sensitive information, should not include the signing key. In this case, <span style="color:red">a race condition</span> allowed the key to be present in the crash dump (this issue has been corrected).”. The consumer signing system in question is not a fault-tolerant system. Faults show up in a fault-tolerant system as inconveniences, not mishaps. 
 	</p>
 	
   </div>
@@ -7051,7 +7085,7 @@ highly appreciated.
 	    <h5>3.7.1.1 Relation between consistency, durability and durability of consistency</h5>
 	  
 	    <p>
-	      In the last sub-section, we went a long way to prove that NDB Cluster satisfies durability of consistency. Namely, if it suffers a system crash and is later recovered, its recovered database state is consistent. It turns out the reason of all that trouble is because NDB Cluster is NOT durable and this conclusion is asserted by the following
+	      In the last subsection, we went a long way to prove that NDB Cluster satisfies durability of consistency. Namely, if it suffers a system crash and is later recovered, its recovered database state is consistent. It turns out the reason of all that trouble is because NDB Cluster is NOT durable and this conclusion is asserted by the following
 	    </p>
 		
 		<div class="theorem" id="theorem6">
@@ -7063,7 +7097,7 @@ highly appreciated.
 		<div class="proof">
 		
 		  <p>
-		    Proof: Durability implies that when a system is recovered from a disaster, all the committed transactions will survive and the effects of them are reflected in the database correctly. The system is also consistent, which implies if a history is executed successfully, it will leave an originally consistent database in a consistent state. Now consider the state the database system is in when it crashes: some transactions have already committed and some are still in progress. Let H be the history that has led to such a state and modify all the still in-progress transactions by adding an 'abort;' statement to each of them and called this new history H'. If the system had not crashed, H' would finish execution and leave the underlying database in a consistent state; but this state is exactly the recovered state for the  execution of H. Hence the proof is completed.
+		    Proof: Durability implies that when a system is recovered from a disaster, all the committed transactions will survive and the effects of them are reflected in the database correctly. The system is also consistent, which implies if a history is executed successfully, it will leave an originally consistent database in a consistent state. Now consider the state the database system is in when it crashes: some transactions have already committed and some are still in progress. Let H be the history that has led to such a state and modify all the still in-progress transactions by adding an 'abort;' statement to each of them and called this new history H'. If the system had not crashed, H' would finish execution and leave the underlying database in a consistent state; but this state is exactly the recovered state for the execution of H. Hence the proof is completed.
 	      </p>
 		
 		  <pre><b>
@@ -7113,6 +7147,185 @@ highly appreciated.
 	</div>
   
   </div>
+  
+  <div id="section3.8">
+  
+    <h3>3.8 Other correctness criteria</h3>
+	
+	<p>
+	  In modern database systems, there are other correctness criteria like linearizability and external consistency that can help us develop database applications more easily. Covering these topics in detail is definitely outside the scope of this article. I will focus on what they can facilitate us in database application development in this subsection.
+	</p>
+	
+	<div id="section3.8.1">
+  
+      <h4>3.8.1 Linearizability</h4>
+	  
+	  <p>
+	    The concept of linearizability is coined in <a href="#he90">[He 90]</a> and its definition can be found in section 2.2 there. Linearizability provides real time(i.e., wall-clock) guarantee on the behavior of a set of single operations (often reads and writes) on a single object according to this <a href="https://www.bailis.org/blog/linearizability-versus-serializability/" target="_blank">article</a> of Peter Bailis'. Here the term 'real time' is the same as the real clock time of the reference frame used throughout this article.
+	  </p>
+	  
+	  <p>
+	    When linearizability is applied to a distributed database system, this single object represents all the replicas of a single data item, like a tuple. And under linearizability, writes to this object should appear to be instantaneous. Imprecisely, once a write completes, all later reads to any replica(where “later” is defined by wall-clock time) should return the value of that write or the value of a later write. Once a read returns a particular value, all later reads should return that value or the value of a later write, no matter which replica a read is routed to.
+	  </p>
+	  
+	  <p>
+	    Let's illustrate this with an example.
+	  </p>
+	  
+	  <div class="example" id="example25">
+	  
+	    <p>
+	      <b>Example 25</b>: This example is from an <a href="https://www.cockroachlabs.com/blog/consistency-model/" target="_blank">article</a> by Andrei Matei(see the section 'HN1'). There are three transactions involved.
+	    </p>
+	  
+	    <pre><b>
+	      T1: insert into hacker_news_comments (id, parent_id, text) values (1, NULL, 'a root comment')                                                                                       
+	    </b></pre>
+	  
+	    <p>
+	      In this transaction, Andrei Matei starts a new thread in the Hacker News forum and it commits.
+	    </p>
+	  
+	    <pre><b>
+	      T2: insert into hacker_news_comments (id, parent_id, text) values (2, 1, 'OP is wrong')                                                                                    
+	    </b></pre>
+	  
+	    <p>
+	      Andrei Matei then yells across the room to his friend Tobi who is waiting to reply to this thread. Tobi then executes T2 and it commits.
+	    </p>
+		
+		
+		<pre><b>
+	      T3: select id, text from hacker_news_comments                                                                              
+	    </b></pre>
+		
+	    <p>
+	      They then tell their friend Nathan to read about it. Nathan executes T3 and it commits. But only Tobi's reply – (2, 1, 'OP is wrong') – is returned.
+	    </p>
+		
+		<pre><b>
+	                                                                                                       ## 
+	    </b></pre>
+	  
+	  </div>
+	  
+	  <p>
+	    Notice such an anomaly can't show up in a standalone database system. That is because when a transaction reports back to its client as committed, its change to the database should already be visible. So T3 should've been able to read both insertions in that case.
+	  </p>
+	  
+	  <p>
+	    But for a distributed database system, the story is very different. Consider the case when Nathan executes T3, its read for the first insertion is sent to a secondary replica and the read for the second insertion is routed to the primary replica. There is a chance that the replicated first insertion hasn't arrived at the secondary replica yet and the anomaly in this example could result.
+	  </p>
+	  
+	  <p>
+	    Now for a distributed database system that implements linearizability, it guarantees that once a transaction reports to its client as committed, the transaction's writes should be visible on all replicas. Hence both T1 and T2's writes will be seen by T3 and the anomaly goes away.
+	  </p>
+	  
+	  <p>
+	    CockroachDB's linearizability implementation is described in the section 'A Replicated Register Synchronizing Through Clocks' in this <a href="https://www.cockroachlabs.com/blog/global-tables-in-cockroachdb/" target="_blank">article</a>. Every Read-Write transaction is assigned a timestamp in the future(say 1 second from now) when it starts Two-Phase-Commit. And clocks of members in a Raft group are synchronized to be within a maximum clock skew(say 10 ms). After Two-Phase-Commit is finished, each replica performs a 'commit-wait' until that one second has elapsed before serving the updated value. The last 10ms of this one second duration is called an 'uncertain interval'. A replica stops serving the old value of the to-be-updated tuple once its clock advances into the 'uncertain interval'. This way, the new value is established instantaneously once a member(not necessarily the leader, but one that finishes 'commit-wait' first) of a Raft group starts serving it; since at that time, all other Raft participants have at least already entered the 'uncertain interval' and the old value is not served any more. Hence all later reads to any replica should return the value of that write or the value of a later write and once a read returns a particular value, all later reads should return that value or the value of a later write, no matter which replica a read is routed to. This logic is depicted in the diagram in the section 'A Replicated Register Synchronizing Through Clocks'.
+	  </p>
+	  
+	  <p>
+	    So this is what happens in CockroachDB's linearizability implementation in the case when a read comes in, it encounters a committing transaction. In the case this read is served by a committed version, there is a slight complication. Consider the following situation: the read comes in with timestamp t and discovers a version with timestamp t + 5ms; normally, this read should not return this version because in CockroachDB, only versions before t is served; but since these two timestamps lie in the same uncertainty interval, there is a chance that the version has committed before this read in real time; then to guarantee linearizability, this read should return this version or a later one and this is a dilemma. To resolve this issue, CockroachDB pushes the read's timestamp to after t + 5m and validates all reads in the associated transaction through a refresh operation. This is discussed in the 'Global Tables implementation' subsection in the article mentioned in last paragraph.
+	  </p>
+	  
+	  <p>
+	    Remark: In reality, the 10ms length of the uncertainty interval is control by the <a href="https://docs.cockroachlabs.com/docs/stable/cockroach-start#flags-max-offset" target="_blank">max-offset</a> flag, which defaults to 500ms; the 1 second 'lead time' into the future, on the other hand, depends on 'the maximum clock skew', 'the time it takes to achieve consensus for committing a transaction', 'the time it takes a committed value to replicate to all non-voting replicas', 'the lifetime of a writing transaction' according to the 'Global Tables implementation' subsection.
+	  </p>
+	  
+	  <p>
+	    There is a catch though. While most of the time, clocks in a Raft group can be synchronized to be within a 10ms interval, it could fail sometimes. When this happens, CockroachDB will take down the node that is drifting away. Unfortunately, according to Jepsen's <a href="https://jepsen.io/analyses/cockroachdb-beta-20160829" target="_blank">report</a> on CockroachDB(see the 'Discussion' section), the process to take down a node may take a few seconds and the anomaly described in Example <a href="#example25">25</a> could be observed by a client before that.
+	  </p>
+	  
+	  <p>
+	    For NDB Cluster, all reads are routed to the primary replica and secondary replicas are only used as backup as discussed in Section 2, so linearizability is not needed to fence off the anomaly in Example <a href="#example25">25</a>. But as of Dec. 2024, it seems Mikael Ronstrom is building a feature into NDB Cluster that reads can also be routed to secondary replicas to promote its Kubernetes support(see 'RONDB-785: Set LocationDomainId dynamically' <a href="https://mikaelronstrom.blogspot.com/2024/12/release-of-rondb-22107.html" target="_blank">here</a>). If that is the case, the anomaly in Example <a href="#example25">25</a> could happen. I truly wish NDB Cluster could get us a configuration parameter to switch this on and off so that we have an option when linearizability is important.
+	  </p>
+	  
+	  <p>
+	    If that wish can't be realized, we probably need to place locks in T3 so that when the read of T1's insertion reaches a secondary replica, it will be blocked until the write is available. Such a solution  would certainly impact performance and the application might need to be re-designed so that this impact is minimized.
+	  </p>
+	  
+	  <p>
+	    TiDB‘s Snapshot Isolation provides linearizability because right after a write becomes visible at a Raft leader, it will be available to a read with timestamp larger than the commit timestamp of this write, whichever replica this read is sent to. This is guaranteed by the arguments <a href="https://tikv.org/deep-dive/distributed-transaction/timestamp-oracle/" target="_blank">here</a>(in the fourth paragraph).
+	  </p>
+	  
+	  <p>
+	    For Google's Spanner, its linearizability implementation is related to aspects of external consistency and hence will be delayed until the next subsection.
+	  </p>
+	  
+	</div>
+	
+	<div id="section3.8.2">
+  
+      <h4>3.8.2 External consistency</h4>
+	  
+	  <div class="example" id="example26">
+	  
+	    <p>
+	      <b>Example 26</b>: Assuming everything is the same as in Example 25, except that T3 starts slightly before T1 and T2 do in real time and only returns the result after they've committed. Is it possible for T3 see the anomaly? 
+		</p>
+		
+		<pre><b>
+	                                                                                                       ## 
+	    </b></pre>
+		
+	  </div>
+	  
+	  <p>
+	    In general, the answer is still a 'yes'. In fact, in the NDB Cluster case, even if all reads are routed to primary replicas, the anomaly still can show up. That is because when T3's read reaches the primary replica where T1's insertion resides, T1 might not have committed yet; while the commit of T2 might have happened upon the read's arrival. The fact that T3 starts before T1 and T2 makes both possible.
+	  </p>
+	  
+	  <p>
+	    For CockroachDB, the fact that the anomaly can show up is demonstrated in Jepsen's <a href="https://jepsen.io/analyses/cockroachdb-beta-20160829" target="_blank">report</a>(Please refer to the section 'Comments'). Notice this anomaly occurs under CockroachDB's Serializable isolation level and the reason is that the serial order the history is equivalent to is T2, T3, T1.
+	  </p>
+	  
+	  <p>
+	    So apparently, having just linearizability is not good enough to get rid of the anomaly in Example <a href="#example26">26</a>. We introduce the concept of external consistency for that purpose.
+	  </p>
+	  
+	  <div class="theorem">
+	
+	      <b>Property 1(external consistency)</b>: If a Read-Write transaction T1 commits before another Read-Write transaction T2's start in real time, then T1’s commit timestamp is smaller than T2’s.
+		  
+	  </div>
+	   
+	  <p>
+	    TiDB's Snapshot Isolation satisfies external consistency is clear from the monotonicity of its timestamp service. With external consistency, we can conclude that TiDB's Snapshot Isolation doesn't demonstrate the anomaly in Example <a href="#example26">26</a> and the arguments are as follows: external consistency implies that T1's timestamp is smaller than T2's; the fact that T3 reads T2's write implies T3's timestamp is greater than T2's by the definition of Snapshot Isolation, and hence greater than T1's; Snapshot Isolation implies T3 will see T1's write and therefore the anomaly is impossible.
+	  </p>
+	  
+	  <p>
+	    For Google's Spanner, the proof that it satisfies external consistency is given in section 4.1.2 of <a href="#co13">[Co 13]</a>. So now we have T1's timestamp < T2's. And T3 is a Read-Only transaction and it's reads are served as in Snapshot Isolation. The rest of the arguments is the same as in the TiDB case. Hence the anomaly in Example <a href="#example26">26</a> can't show up in Google's Spanner either.
+	  </p>
+	  
+	  <p>
+	    Google's Spanner also satisfies the following property, which can be utilized to demonstrate that it also honors linearizability.
+	  </p>
+	  
+	  <div class="theorem">
+	
+	      <b>Property 2</b>: If a Read-Write transaction T1 commits before a Read-Only transaction T2's start in real time, then T1’s commit timestamp is smaller than T2’s timestamp for reading.
+		  
+	  </div>
+	  
+	  <p>
+	    This property is discussed in section 4.1.4 of <a href="#co13">[Co 13]</a> and its proof is similar to that of external consistency. Notice Google's Spanner also call this property part of external consistency, I distinguish these two properties since they play different roles in this discussion.
+	  </p>
+	  
+	  <p>
+	    Now we want to prove that when a Paxos leader in Google's Spanner starts to serve a write for reading, this newly updated version will be available to a read sent to any replica. If this read is from a Read-Only transaction, we know from property 2 that its timestamp for reading is greater than the write's commit timestamp and the read will see the update since it's a read in Snapshot Isolation. If on the other hand this read is from a Read-Write transaction, it will be a locking read; when this locking read reaches any replica, it will either see a lock of the write, or a version that is later or equal to the write's. This proves linearizability in Google's Spanner.
+	  </p>
+	  
+	  <p>
+	    Notice in the NDB Cluster case, simply placing T3's read in a read lock doesn't stop the anomaly in Example 26 from showing up. Since T3 starts before T1 does in real time, there is no guarantee T1's write lock is already in place when T3's read arrives. One way to fence off this anomaly is to introduce a foreign key in the table so that the parent_id field references the id field in the  serializable implementation I've developed for NDB Cluster. Then when T2 executes, the foreign key implementation will try to perform a read on T1's insertion. If it returns an empty set, T2 will be aborted. Otherwise the read will place T2 after T1 in the serial order; and since T3 reads T2's insertion, T3 is placed after T2 in that order, and hence after T1 in that order too; serializability will then guarantee T3 reads T1's insertion. In either case, the anomaly goes away. The case for CockroachDB can be resolved similarly under its own serializability implementation. In general, serializabilty is NOT relevant to linearizability or external consistency. The frame work developed in this article treats every database system as a multi-version system. The fact that a read request is sent to a different replica only means a potentially different version will be returned. And the serializability implementation takes care of it whichever version it returns. But we've just witnessed that we could use serializability to solve an external consistency problem.
+	  </p>
+	  
+	  <p>
+	    Example <a href="#example25">25</a> & <a href="#example26">26</a> demonstrate that linearizability and external consistency provide a client the following guarantee: if two updates happen in order in real time, it should be seen in that order in the underlying database. The discussion in this subsection can easily be extended to the case that involved more than two updates. Hence with linearizability and external consistency, it is easier to develop a database application that makes our clients satisfied.
+	  </p>
+	  
+	</div>
+	
+  </div>
   	
 </div>
 
@@ -7151,10 +7364,10 @@ highly appreciated.
       Before defining a new Repeatable-Read isolation level, we need to take a closer look at MySQL InnoDB's.
     </p>
   
-    <div class="example" id="example25">
+    <div class="example" id="example27">
   
       <p>
-        <b>Example 25</b>: Assuming the same table definition as in Example <a href="#example0">0</a> with these two tuples in table t: (1,2,2,10) and (3,5,5,10). Under the Repeatable-Read isolation level of MySQL InnoDB, execute the transactions T1 and T2 in the following order:
+        <b>Example 27</b>: Assuming the same table definition as in Example <a href="#example0">0</a> with these two tuples in table t: (1,2,2,10) and (3,5,5,10). Under the Repeatable-Read isolation level of MySQL InnoDB, execute the transactions T1 and T2 in the following order:
       </p>
 	
 	  <pre><b>
@@ -7237,7 +7450,7 @@ highly appreciated.
     <div class="example">
 	
       <p>
-	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: Under this newly defined Repeatable-Read isolation level, the same execution will give a different result. In particular. the second select in T1 should return (1,2,3,10) for the first tuple and (3,5,5,10) for the second one. In other words, for the first tuple, T1 sees the update to id3 by T1, but not the update to id2 by T2 since everything is interpreted at field level now and T1 is NOT updating id2. Because there is no conflict loop in this history, it is serializable by type C of the Serializability Theorem. And the order of serialization is, of course, {T1, T2}. This is just another example that we should use a field-based system since it leads to less conflicts in general. 
+	    <b>Example <a href="#example27">27</a> (Continuation...)</b>: Under this newly defined Repeatable-Read isolation level, the same execution will give a different result. In particular. the second select in T1 should return (1,2,3,10) for the first tuple and (3,5,5,10) for the second one. In other words, for the first tuple, T1 sees the update to id3 by T1, but not the update to id2 by T2 since everything is interpreted at field level now and T1 is NOT updating id2. Because there is no conflict loop in this history, it is serializable by type C of the Serializability Theorem. And the order of serialization is, of course, {T1, T2}. This is just another example that we should use a field-based system since it leads to less conflicts in general. 
 	  </p>
 	
 	  <p>
@@ -7314,12 +7527,12 @@ highly appreciated.
     </p>
 	
 	<p>
-      If we try to use the 'decision set' version we've just defined for a predicate read, we must make sure it is the 'decision set' version that we use, not an arbitrary combination of field versions in the 'decision set' since we are now in a field-based system. In the newly defined Read-Committed isolation level, this can be done by acquiring short read lock on the specific field before the predicate read of a tuple and make sure the matching process happens in the duration the lock is held. Since updates for the fields in the 'decision set' only happen after the specific field is locked, the short read lock guarantees the reading of a 'decision set' version. In the case an initial internal version for the 'decision set' is read, the write lock acquired on the specific field before the read should guarantee the reading of a 'decision set' version. In the newly defined Snapshot Isolation isolation level, the predicate read returns all the latest field versions in the 'decision set' that are before the starting time of the transaction and the fact that these field versions constitute the latest 'decision set' version is clear from the way 'decision set' versions are generated. In the case an initial internal version for the 'decision set' is read, the situation is the same. In the newly defined Repeatable-Read isolation level, as Example <a href="#example25">25</a> indicates, different scenarios arise. If the 'decision set' of the predicate read is NOT altered in the transaction or the predicate read happens before the alternation, it behaves the same as in the Snapshot Isolation isolation level case. Namely, it doesn't see any 'decision set' version established after the starting time of the transaction. Otherwise, if the predicate read happens after the alternation, it behaves the same as in the Read-Committed isolation level case. Namely, it sees 'decision set' versions established after the starting time of the transaction. In either case, we may have it return a 'decision set' version for the predicate read.
+      If we try to use the 'decision set' version we've just defined for a predicate read, we must make sure it is the 'decision set' version that we use, not an arbitrary combination of field versions in the 'decision set' since we are now in a field-based system. In the newly defined Read-Committed isolation level, this can be done by acquiring short read lock on the specific field before the predicate read of a tuple and make sure the matching process happens in the duration the lock is held. Since updates for the fields in the 'decision set' only happen after the specific field is locked, the short read lock guarantees the reading of a 'decision set' version. In the case an initial internal version for the 'decision set' is read, the write lock acquired on the specific field before the read should guarantee the reading of a 'decision set' version. In the newly defined Snapshot Isolation isolation level, the predicate read returns all the latest field versions in the 'decision set' that are before the starting time of the transaction and the fact that these field versions constitute the latest 'decision set' version is clear from the way 'decision set' versions are generated. In the case an initial internal version for the 'decision set' is read, the situation is the same. In the newly defined Repeatable-Read isolation level, as Example <a href="#example27">27</a> indicates, different scenarios arise. If the 'decision set' of the predicate read is NOT altered in the transaction or the predicate read happens before the alternation, it behaves the same as in the Snapshot Isolation isolation level case. Namely, it doesn't see any 'decision set' version established after the starting time of the transaction. Otherwise, if the predicate read happens after the alternation, it behaves the same as in the Read-Committed isolation level case. Namely, it sees 'decision set' versions established after the starting time of the transaction. In either case, we may have it return a 'decision set' version for the predicate read.
     </p>
 	
 	<div class="example">
       <p>
-	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: If we replace the second select in T1 in the original history with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level, the first tuple will be a match for this predicate read because the reading of the initial internal 'decision set' version sees the update in T2(say, we use id2 as the specific field). And a conflict loop exists in the execution since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on the 'decision set' {id2, id3} of the first tuple.
+	    <b>Example <a href="#example27">27</a> (Continuation...)</b>: If we replace the second select in T1 in the original history with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level, the first tuple will be a match for this predicate read because the reading of the initial internal 'decision set' version sees the update in T2(say, we use id2 as the specific field). And a conflict loop exists in the execution since there is a RW conflict from T1 to T2 and a WW(or WR) conflict from T2 to T1 on the 'decision set' {id2, id3} of the first tuple.
 	  </p>
 	  
 	  <pre><b>
@@ -7459,7 +7672,7 @@ highly appreciated.
 	
 	<div class="example">
       <p>
-	    <b>Example <a href="#example25">25</a> (Continuation...)</b>: If we replace the second select in T1 with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level and this time the 'decision set' version system is not introduced with the help of a specific field, an item-based WW and an item-based WR conflict from T2 to T1 on 'decision set' {id2, id3} of the first tuple exist to form a conflict loop.
+	    <b>Example <a href="#example27">27</a> (Continuation...)</b>: If we replace the second select in T1 with a statement like '… where id2=1 and id3=3;' under the newly defined Repeatable-Read isolation level and this time the 'decision set' version system is not introduced with the help of a specific field, an item-based WW and an item-based WR conflict from T2 to T1 on 'decision set' {id2, id3} of the first tuple exist to form a conflict loop.
 	  </p>
 	  
 	  <pre><b>
@@ -7532,7 +7745,7 @@ highly appreciated.
 	<div class="example" id="example26">
 	
 	  <p>
-	    <b>Example 26</b>: Consider DSG(A): T1 → T2 with only one WW conflict from updates NOT on the same field. DSG(D) in this case is an empty graph, so we could choose T2, T1 as the order in a serial history if decision was based on DSG(D). And the original history is NOT equivalent to serial history {T2, T1}.
+	    <b>Example 28</b>: Consider DSG(A): T1 → T2 with only one WW conflict from updates NOT on the same field. DSG(D) in this case is an empty graph, so we could choose T2, T1 as the order in a serial history if decision was based on DSG(D). And the original history is NOT equivalent to serial history {T2, T1}.
       </p>
 	  
 	  <pre><b>
@@ -7609,7 +7822,7 @@ highly appreciated.
   <h2>5. Generic generalization of Serializable Snapshot Isolation to a distributed database system</h2>
   
   <p>
-    When I started this work, there were only two serializability implementations: 2PL like that of MySQL InnoDB's and PostgreSQL's Serializable Snapshot Isolation. And it's been a dream to generalize both to a distributed database system so that we can solve larger problems. I've successfully mounted a lock-based serializability implementation to NDB Cluster in Section <a href="#section2" >2</a> & <a href="#section3" >3</a>, with the framework developed in Section <a href="#section1" >1</a>. One major difficulty of generalizing 2PL is its thrashing behavior under heavy load. I address this with the Generalized Serializability Theorems and provide a partial solution to it: it works only if consistencies of enough reads can be sacrificed. It is still a good trade-off since these inconsistencies are only transient and it is safe as long as one doesn't take action when they are spotted.
+    When I started this work, there were only two serializability implementations: 2PL like that of MySQL InnoDB's and PostgreSQL's Serializable Snapshot Isolation. And it's been a dream to generalize both to a distributed database system so that we can solve larger problems. I've successfully mounted a lock-based serializability implementation to NDB Cluster in Section <a href="#section2" >2</a> & <a href="#section3" >3</a>, with the framework developed in Section <a href="#section1" >1</a>. One major obstacle of generalizing 2PL is its thrashing behavior under heavy load. After all, if it already demonstrates this behavior in a standalone system, it is hard to expect a better outcome in a distributed system where the workload may be more intense, especially if this load is skew. I address this with the Generalized Serializability Theorems and provide a partial solution to it: it works only if consistencies of enough reads can be sacrificed. It is still a good trade-off since these inconsistencies are only transient and it is safe as long as one doesn't take action when they are spotted.
   </p>
   
   <p>
@@ -7636,7 +7849,7 @@ highly appreciated.
     </p>
   
     <p>
-      Remark: I came across the Clock Condition in Lamport's classic paper (<a href="#la78" >[La 78]</a>) about distributed clock. It was for the logical clock defined there only. I extend the idea here for a generic distributed clock. In the Clock Condition, we use “happened before” instead of 'happened before' as the rest of this article does. This “happened before” partial order is for events designated as points in time, not as an interval as in the 'happened before' partial order, so that we may associate a timestamp to each event. This way of capturing the temporal order in a reference frame is discussed in detail in Appendix <a href="#appB" >B</a> and the subsection about CockroachDB in Appendix <a href="#appD" >D</a>: events inside a thread are represented as a sequence of points in time and two events connected by an inter-thread message is interpreted as a type II edge. And this potential mixed usage of “happened before” and 'happened before' is OK since 'happened before' is only used in type D of the Serializability Theorem to assert that a non-serializable history contains a cycle in the proof of Theorem 2.1 below. After that, “happened before” is used for the rest of the arguments.
+      Remark: When I came across the Clock Condition in Lamport's classic paper (<a href="#la78" >[La 78]</a>) about distributed clock, it was for the logical clock defined there only. I extend the idea here for a generic distributed clock. In the Clock Condition, we use “happened before” instead of 'happened before' as the rest of this article does. This “happened before” partial order is for events designated as points in time, not as an interval as in the 'happened before' partial order, so that we may associate a timestamp to each event. This way of capturing the temporal order in a reference frame is discussed in detail in Appendix <a href="#appB" >B</a> and the subsection about CockroachDB in Appendix <a href="#appD" >D</a>: events inside a thread are represented as a sequence of points in time and two events connected by an inter-thread message is interpreted as a type II edge. And this potential mixed usage of “happened before” and 'happened before' is OK since 'happened before' is only used in type D of the Serializability Theorem to assert that a non-serializable history contains a cycle in the proof of Theorem 2.1 below. After that, “happened before” is used for the rest of the arguments.
     </p>
   
     <p>
@@ -7960,7 +8173,7 @@ highly appreciated.
 	</b></pre>
 	
 	<p>
-      Remark: In this section, instead of First-Updater-Wins rule, we use First-Committer-Wins rule to resolve write conflicts between concurrent transactions. Such an implementation doesn't require long locks. Instead, we'll develop a flag system, which is discussed in detail in next sub-section, to capture RW conflicts. In a flag system, we use a read flag for a SIREAD lock and a write flag for a write lock. But in this sub-section, let's still hold on to the concepts of SIREAD lock and write lock so that it doesn't deviate too much from Cahill's work.
+      Remark: In this section, instead of First-Updater-Wins rule, we use First-Committer-Wins rule to resolve write conflicts between concurrent transactions. Such an implementation doesn't require long locks. Instead, we'll develop a flag system, which is discussed in detail in next subsection, to capture RW conflicts. In a flag system, we use a read flag for a SIREAD lock and a write flag for a write lock. But in this subsection, let's still hold on to the concepts of SIREAD lock and write lock so that it doesn't deviate too much from Cahill's work.
     </p>
 	
 	<p>
@@ -8123,7 +8336,7 @@ highly appreciated.
 	<div class="example" id="example27">
 	
 	  <p>
-        <b>Example 27</b>: Let T1 and T2 be two transactions executed under Snapshot Isolation with a timestamp service satisfying the Clock Condition. And there is a predicate RW conflict from T1 to T2 such that the predicate read in T1 uses a 'decision set' version v1 while T2 established the next 'decision set' version v2 that changes the match. The start and commit timestamps for T1 and T2 are ts1, tc1 and ts2, tc2 respectively such that T1's start “happened before” T2's and T1's commit “happened before” T2's and hence ts1 < ts2 and tc1 < tc2.
+        <b>Example 29</b>: Let T1 and T2 be two transactions executed under Snapshot Isolation with a timestamp service satisfying the Clock Condition. And there is a predicate RW conflict from T1 to T2 such that the predicate read in T1 uses a 'decision set' version v1 while T2 established the next 'decision set' version v2 that changes the match. The start and commit timestamps for T1 and T2 are ts1, tc1 and ts2, tc2 respectively such that T1's start “happened before” T2's and T1's commit “happened before” T2's and hence ts1 < ts2 and tc1 < tc2.
       </p>
 	
 	  <p>
@@ -8886,7 +9099,7 @@ highly appreciated.
 	  <div class="example" id="example28">
 	
 	    <p>
-          <b>Example 28</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in NDB Cluster.
+          <b>Example 30</b>: Let t be the table in Example <a href="#example0" >0</a> with only one row (1, 1, 1, 5) in it. Execute the following statements in T1 and T2 in that order in NDB Cluster.
         </p>
 	  
 	    <pre><b>
@@ -8922,7 +9135,7 @@ highly appreciated.
       </p>
 
       <p>
-        Most work in the literature focus on avoiding conflict loops to provide Serializability. Few of them discusses when such a loop exists, how, when and where inconsistency would show up. If we can answer some of these questions, maybe we can find a way to interfere with it so that inconsistency is suppressed to a bearable level as the Generalized Serializability Theorems and Example <a href="#example28" >28</a> have demonstrated(in both cases, inconsistencies don't show up in the underlying database). So in general, we may ask the third question as follows.
+        Most work in the literature focus on avoiding conflict loops to provide Serializability. Few of them discusses when such a loop exists, how, when and where inconsistency would show up. If we can answer some of these questions, maybe we can find a way to interfere with it so that inconsistency is suppressed to a bearable level as the Generalized Serializability Theorems and Example <a href="#example30" >30</a> have demonstrated(in both cases, inconsistencies don't show up in the underlying database). So in general, we may ask the third question as follows.
       </p>
 	
 	  <ol>
@@ -8945,7 +9158,7 @@ highly appreciated.
 	<div class="example" id="example29">
 	
 	  <p>
-	    <b>Example 29</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
+	    <b>Example 31</b>: Suppose a super bowl ticket selling application is deployed on a database implementing Serializable Snapshot Isolation. At its peak, 1000 transactions are started simultaneously, each attempting to purchase a ticket, in which the following statement is executed:
 	  </p>
 	  
 	  <pre><b>
@@ -8983,7 +9196,7 @@ highly appreciated.
     </p>
 
     <p>
-      Second, 'pessimistic technology' like NDB Cluster usually uses time-outs to detect deadlocks. This mechanism will time-out those statements that have been waiting too long for a lock. If we employ a re-try mechanism to restart these dead-lock victims, this effectively re-generates the cascading abortion scenario discussed in Example <a href="#example29" >29</a>.
+      Second, 'pessimistic technology' like NDB Cluster usually uses time-outs to detect deadlocks. This mechanism will time-out those statements that have been waiting too long for a lock. If we employ a re-try mechanism to restart these dead-lock victims, this effectively re-generates the cascading abortion scenario discussed in Example <a href="#example31" >31</a>.
     </p>
 	
 	<p>
@@ -9015,13 +9228,13 @@ highly appreciated.
     </p>
 	
 	<p>
-	  In my opinion, the hot spot problem is really a resource problem, in which people are competing to gain control of precious resources, like the super bowl tickets in Example <a href="#example29" >29</a>. So the real solution is to increase resource providing. Unfortunately that is not always possible, like the stadium for the super bowl match has only a limited number of seats. When it is impossible, it is the database application developer who will catch the ball. Since it is not a computer science problem, we can't guarantee solving it completely by applying computer science methods and sometimes providing an alleviation is already the optimal solution. One approach to this end is to distribute the load to a few sites so that at each site the race become less intensive.
+	  In my opinion, the hot spot problem is really a resource problem, in which people are competing to gain control of precious resources, like the super bowl tickets in Example <a href="#example31" >31</a>. So the real solution is to increase resource providing. Unfortunately that is not always possible, like the stadium for the super bowl match has only a limited number of seats. When it is impossible, it is the database application developer who will catch the ball. Since it is not a computer science problem, we can't guarantee solving it completely by applying computer science methods and sometimes providing an alleviation is already the optimal solution. One approach to this end is to distribute the load to a few sites so that at each site the race become less intensive.
 	</p>
 	
 	<div class="example">
 	
 	  <p>
-        <b>Example <a href="#example29">29</a> (Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
+        <b>Example <a href="#example31">31</a> (Continuation...)</b>: Suppose the load is distributed evenly to five sites, then we have a better efficiency e = 200 / [200 + (1 + 2 + … + 199) * 0.5] < 0.02. If on the other hand, the load is distributed evenly to ten sites, efficiency e = 100 / [100 + (1 + 2 + … + 99) * 0.5] < 0.04, which is about 10 times better than the original design.
       </p>
 
       <p>
@@ -9055,7 +9268,7 @@ highly appreciated.
 	</div>
 	
 	<p>
-      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in this Example <a href="#example29" >29</a>, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
+      However, this simple 'distributing the load to a few sites' approach breaks down as soon as the situation becomes slightly more complex. Suppose in this Example <a href="#example31" >31</a>, a restaurant boss in the stadium wants to conduct a promotion by providing 100 free meals for the first 100 tickets sold for the 5000 VIP seats. So the following statement is added to the transaction:
     </p>
 	
 	<pre><b>
@@ -9170,12 +9383,46 @@ highly appreciated.
     </p>
 	
 	<p>
-	  Therefore I highly recommend you to use the systematic way developed in this article instead to fence off this kind of threat. To that end, all four serializability implementations we've explored certainly will do the job since a conflict loop will not be possible at all. It turns out even Snapshot Isolation is good enough for the example in this sub-section since the update of the 'balance' field will already make any two transactions non-concurrent. Notice that we can't apply the Generalized Serializability Theorems here since all the transactions are Read-Write and all the reads in them affect writes.
+	  Therefore I highly recommend you to use the systematic way developed in this article instead to fence off this kind of threat. To that end, all four serializability implementations we've explored certainly will do the job since a conflict loop will not be possible at all. It turns out even Snapshot Isolation is good enough for the example in this subsection since the update of the 'balance' field will already make any two transactions non-concurrent. Notice that we can't apply the Generalized Serializability Theorems here since all the transactions are Read-Write and all the reads in them affect writes.
 	</p>
 	
 	<p>
       I will stay in this field for at least five more years and see if we could solve the serializability problem completely in this spin. You are very much welcome to join me in this effort.
     </p>
+	
+	<div id="section7.3.1">
+      <h4>7.3.1 Consistency related hacks and incidents</h4>
+	  
+	  <p>
+	    In this subsection, I will document those hacks and incidents that are related to consistency.
+	  </p>
+	
+	  <div id="section7.3.1.1">
+        <h5>7.3.1.1 Amazon's DNS incident</h5>
+	
+	    <p>
+	      This consistency related incident is described <a href="https://arstechnica.com/gadgets/2025/10/a-single-point-of-failure-triggered-the-amazon-outage-affecting-millions/" target="_blank">here</a>.
+	    </p>
+	  
+	    <p>
+	      From the description of this article, we can see clearly that there is a pair of WW conflicts between the two Enactors on the eventually deleted plan(let's assume that is a tuple). If they were executed under a serializable isolation level, this conflict loop wouldn't have survived and left the database in an inconsistent state.
+	    </p>
+	
+	    <p>
+	      DynamoDB's default isolation level is called 'serializable'. But from the specification in DynamoDB's doc <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html#transaction-isolation" target="_blank">here</a>, it only provides serializable isolation at the operation(read/write) level, NOT at the transaction level.
+	    </p>
+		
+		<p>
+	      Failure to anticipate two Enactors could pop up in the system also contributes to this disaster. Since there is apparently a Swiss Cheese effect in play here and human mistakes are not always avoidable, placing a critical database application under a genuine serializable isolation level or something equivalent to prevent this kind of catastrophe is extremely important. 
+	    </p>
+		
+		<p>
+	      It is said that this incident has incurred a multi-billion-dollar <a href="https://slashdot.org/story/25/10/21/1942240/amazons-dns-problem-knocked-out-half-the-web-likely-costing-billions" target="_blank">loss</a> to Amazon.
+	    </p>
+		
+	  </div>
+	  
+	</div>
 	
   </div>	
 	
@@ -9219,6 +9466,10 @@ highly appreciated.
 
 <div id="gr93" class="cite">
 <b>[Gr 93]</b> Gray, J., Reuter, A. [1993]. “<i>Transaction Processing: concepts and techniques</i>”, ISBN 1-55860-190-2.
+</div>
+
+<div id="he90" class="cite">
+<b>[He 90]</b> Herlihy, M., Wing, J. [1990]. “<i>Linearizability: A Correctness Condition for Concurrent Objects</i>”, <a href="https://dl.acm.org/journal/toplas" target="_blank">ACM Transactions on Programming Languages and Systems</a>, Vol. 12, No. 3, July 1990, Pages 463-492.
 </div>
 
 <div id="ki13" class="cite">
@@ -9294,7 +9545,7 @@ highly appreciated.
     <h3>A.1 The theoretical framework</h3>
 	
 	<p>
-      In this article, I built a theoretical framework for the Serilizability Theorems on top of Adya's. The process combines the original framework with new concepts and definitions, which might seem messy for some of the audience. I'd like to clarify things up in this sub-section by restating it for your reference.
+      In this article, I built a theoretical framework for the Serilizability Theorems on top of Adya's. The process combines the original framework with new concepts and definitions, which might seem messy for some of the audience. I'd like to clarify things up in this subsection by restating it for your reference.
     </p>
 	
 	<p>
@@ -9725,7 +9976,7 @@ highly appreciated.
 	<div class="example" id="example30">
 	  
 	  <p>
-	    <b>Example 30</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
+	    <b>Example 32</b>: Consider a system implementing an isolation level the same as MySQL InnoDB's Repeatable-Read isolation level, except that when an item read is requested, the system doesn't just serve the latest version before a transaction's starting timestamp; instead, a random function is used to choose a version before that timestamp to fulfill the request. 
       </p>
 	  
 	  <p>
@@ -9823,13 +10074,13 @@ highly appreciated.
     </p>
 	
 	<p>
-      In this process, a distributed timing system is necessary to provide timestamp service for Snapshot Isolation reads and other purposes. A variant of Marzullo's algorithm for distributed time described in <a href="#ma83" >[Ma 83]</a> is used to synchronize clocks on different time servers, which have been set to initial values by polling a list of accurate atomic clocks and GPS clocks with the algorithm described in <a href="#mi81" >[Mi 81]</a>. This time service is an interesting one since it returns an interval containing the correct time instead of just one single value when it is queried. In other words, when a node requests time service by calling TT.now(), it returns an interval [earliest, latest], where both 'earliest' and 'latest' are timestamps and the absolute time when this call happens is represented by a timestamp inside this interval. Based on this time service, external consistency is preserved: if the actual starting time of a Read-Write transaction T2 happens after the actual commit time of Read-Write transaction T1, T2's commit timestamp is greater than that of T1's. Such an implementation turns out to be serializable and the proof goes as follows.
+      In this process, a distributed timing system is necessary to provide timestamp service for Snapshot Isolation reads and other purposes. A variant of Marzullo's algorithm for distributed time described in <a href="#ma83" >[Ma 83]</a> is used to synchronize clocks on different time servers, which have been set to initial values by polling a list of accurate atomic clocks and GPS clocks with the algorithm described in <a href="#mi81" >[Mi 81]</a>. This time service is an interesting one since it returns an interval containing the correct time instead of just one single value when it is queried. In other words, when a node requests time service by calling TT.now(), it returns an interval [earliest, latest], where both 'earliest' and 'latest' are timestamps and the absolute time when this call happens is represented by a timestamp inside this interval. Based on this time service, external consistency is preserved: if the actual starting time of a Read-Write transaction T2 happens after the actual commit time of Read-Write transaction T1, T2's commit timestamp is greater than that of T1's. With this timestamp service, it turns out that Google's Spanner provides us serializability and the proof goes as follows.
     </p>
 	
 	<div class="proof">
 	
 	  <p>
-        Proof: As usual, we will try to apply type B of the Serializability Theorem and we'll prove it by contradiction. Let's assume a conflict loop was present in the history. Inside this loop, choose the timestamp for the start of it if it was a Read-Only transaction and choose the timestamp for the commit of it if it was a Read-Write one. Then for all three types of conflicts, we claim that we would have order of timestamps to be consistent with order of transactions and hence a loop of timestamp would arise. That is a contradiction and a conflict loop doesn't exist.
+        As usual, we will try to apply type B of the Serializability Theorem and we'll prove it by contradiction. Let's assume a conflict loop was present in the history. Inside this loop, choose the timestamp for the start of it if it was a Read-Only transaction and choose the timestamp for the commit of it if it was a Read-Write one. We claim that a loop of conflicts would give rise to a loop of timestamps and a contradiction will surface.
       </p>
 
       <p>
@@ -9859,8 +10110,12 @@ highly appreciated.
       </p>
 	  
 	  <p>
-        In the second case, if T1 → T2 is a WR conflict, s1 < s2 is clear since the Read-Only transaction T2's reads are served as in Snapshot Isolation. If on the other hand, T1 → T2 is a RW conflict, the fact that s1 < s2 follows from the following monotonicity invariant of Spanner as described in section 4.1.2 of <a href="#co13" >[Co 13]</a>: within each Paxos group, Spanner assigns timestamps to Paxos writes in monotonically increasing order, even across leaders. To see that, we assume that s1 >= s2 was true. Then when T1 performed its reads, timestamp s2 mustn't have been written by the Paxos system since otherwise T1 would've seen updates by T2, which would contradict with the fact that the conflict is a RW one. The only possibility was that s2 would be written later by the Paxos system. But that is not possible either since for T1 to perform its reads, s1 must be <= a safe timestamp s0 so that the replica is up-to-date for serving the read as described in section 4.1.3 of <a href="#co13" >[Co 13]</a>; on the other hand, the monotonicity invariant of Spanner implies s0 < s2 since s0 had been written and s2 hadn't. So we have s1 <= s0 < s2, which contradicts with s1 >= s2 we started with.
-      </p>
+	    In the second case, if T1 → T2 is a WR conflict, s1 < s2 is clear since the Read-Only transaction T2's reads are served as in Snapshot Isolation. If on the other hand, T1 → T2 is a RW conflict, let's  assume that s1 > s2 was true. Then when T1 performed its reads, the commit record of T2(with timestamp s2 inside)mustn't have been written by the Paxos system since otherwise T1 would've seen updates by T2, which would contradict with the fact that the conflict is a RW one. The only possibility was that this commit record would be written later by the Paxos system. But that is not possible either since for T1 to perform its reads, s1 must be <= a safe timestamp s0 so that the replica is up-to-date for serving the read as described in section 4.1.3 of <a href="#co13" >[Co 13]</a>; and this safe timestamp s0 implies that writes would no longer occur at or below s0 by 4.1.3 of <a href="#co13" >[Co 13]</a>, particularly T2's writes since s2 < s1 <= s0. This implication can be justified by the following monotonicity invariant of Spanner as described in section 4.1.2 of <a href="#co13" >[Co 13]</a>: within each Paxos group, Spanner assigns timestamps to Paxos writes in monotonically increasing order, even across leaders.
+	  </p>
+	  
+	  <p>
+	    So now we have s1 <= s2 along the conflict loop. But the equality sign can't all be true since it only comes from a RW conflict between a Read-Only transaction and a Read-Write one. Hence a contradiction has just been arrived at and serializability is established.
+	  </p>
 	  
 	  <pre><b>
 	                                                                                                       ## 
@@ -9869,16 +10124,12 @@ highly appreciated.
 	</div>
 	
 	<p>
-      The so-called absolute time in <a href="#co13" >[Co 13]</a> is just a synonym of the real clock time of the reference frame used throughout this article. I started looking for conflict loops in histories in Google's Spanner and couldn't find any. After a while I realized that this hybrid isolation level might be a serializable one and tried to give a proof. It was still a surprise to me after I proved it since I thought a merge of 2PL and Snapshot Isolation would only give us an isolation level at least as good as Snapshot Isolation, not necessarily the highest one. I don't know if the developers of Spanner know that their database actually implements the serializable isolation level. It is not mentioned in <a href="#co13" >[Co 13]</a>.
+      The so-called absolute time in <a href="#co13" >[Co 13]</a> is just a synonym of the real clock time of the reference frame used throughout this article. Google's Spanner also provides linearizability and external consistency for database application developers and they are discussed in subsection <a href="#section3.8">3.8</a>.
     </p>
-
-    <p>
-      If an application in Spanner contains datetime related fields, we might have to apply a version of the Ramification Theorem to conclude Serializability on Ram(B)', B being the set of datetime fields, since I am not sure the timestamp system they use can get rid of all the timestamp-based inconsistency.
-    </p>
-
-    <p>
-      A row in a Spanner table consists of three parts: a primary key, the commit timestamp of this row as a version number, the data. So it is practically a key-value data-store with versions. Chances are that a variant of the proof in Example <a href="#example12" >12</a> can be used to show that Spanner is serializable. But I still like this proof better since it is more generic. It is a pity that Spanner didn't implement a full-blown relational database, otherwise we may see this serializability implementation's full power in action. Wish we could see that in the future.
-    </p>
+	
+	<p>
+	  Durability of consistency is guaranteed by Theorem <a href="#theorem6" >6</a> since durability is provided by Paxos.
+	</p>
 	
   </div>
   
@@ -9897,14 +10148,10 @@ highly appreciated.
 	  Besides this limitation of the timestamp service, OceanBase also suffers the same problems Snapshot Isolation does, such as write-skew anomalies and cascading abortion. That said, OceanBase has survived Alibaba's annual sale on Nov. 11th(an online version of Black Friday Sale). It also occupies the first place in the TPCC benchmark list for clusters. This is impressive, especially if you are building an application like Amazon.com. Of course, if in your application SQL statements are executed upon data that span across multiple data nodes(say, data can't fit in a single data node), this benchmark result may not be meaningful for you since OceanBase doesn't support this kind of statements naturally due to its limitation. Its timestamp service, however, doesn't require hardware provision like GPS clocks and atomic clocks that Google's Spanner does and hence its deployment could be more cost-efficient when it applies.
 	</p>
 	
-	<p>
-	  We've talked about external consistency about Spanner and OceanBase. Let's take a look at NDB Cluster. External consistency demonstrated in Spanner and OceanBase doesn't apply to NDB Cluster since it is not a timestamp-based system. There does exist the following abnormal behavior: for two sequentially started Read-Only transactions, the first one return a new value written by a Read-Write transaction because of a delay(for example, the thread handling this transaction got context-switched out) while the second one gets an old value. External consistency is about whether a client of the application feels right. What we emphasize in this article is to make the database right. And we've built a serializable system such that consistency based data corruption is managed, even if a client feels odd sometimes.
-	</p>
-	
   </div>
   
   <div id="sectionD.3">
-    <h3>D.3 CockroachDB</h3> <span style="color:red">(To BE UPDATED. PLEASE CHECK BACK IN A FEW DAYS.)</span>
+    <h3>D.3 CockroachDB</h3>
 	
 	<p>
       CockroachDB implements a serializable isolation level and the following analysis is based on <a href="#tr16" >[Tr 16]</a>.
@@ -9959,7 +10206,7 @@ highly appreciated.
 	</ol>
 	
 	<p>
-	  Remark: For the “happened before” partial order in <a href="#ku14" >[Ku 14]</a>, we can't just use the one described in <a href="#la78" >[La 78]</a> since <a href="#la78" >[La 78]</a>'s is for a system with single-threaded processes and today's systems are almost always multi-threaded. We should use the variant where events inside a thread are represented as points in time and two events connected by an inter-thread message is interpreted as a type II edge as mentioned in Appendix B. If we were to use the variant 'happened before' as in the rest of this article, some of the results in <a href="#ku14" >[Ku 14]</a>, like theorem 4, may not be easily proved. Notice that using this “happened before” variant doesn't affect the correctness of the serializability theorems since it is only used in the timestamp service in of the system; for the serializability theorems, we still use 'happened before' as in the rest of this article. This is a perfect example where we may interpret the temporal order in a distributed system in different ways mathematically.
+	  Remark: For the “happened before” partial order in <a href="#ku14" >[Ku 14]</a>, we can't just use the one described in <a href="#la78" >[La 78]</a> since <a href="#la78" >[La 78]</a>'s is for a system with single-threaded processes and today's systems are almost always multi-threaded. We should use the variant where events inside a thread are represented as points in time and two events connected by an inter-thread message is interpreted as a type II edge as mentioned in Appendix B. If we were to use the variant 'happened before' as in the rest of this article, some of the results in <a href="#ku14" >[Ku 14]</a>, like theorem 4, may not be easily proved. Notice that using this “happened before” variant doesn't affect the correctness of the serializability theorems since it is only used in the timestamp service of the system; for the serializability theorems, we still use 'happened before' as in the rest of this article. This is a perfect example where we may interpret the temporal order in a distributed system in different ways mathematically.
 	</p>
 	
 	<p>
@@ -9967,7 +10214,7 @@ highly appreciated.
     </p>
 	
 	<p>
-      Property 2 suggests that this clock heavily depends on the physical clock provided by NTP. On the one hand, this means things like violation of external consistency becomes less visible for clients if NTP time is synced to be close to real clock time; on the other hand, this also implies if NTP synchronization is seriously off, it might impact this clock protocol.
+      Property 2 suggests that this clock heavily depends on the physical clock provided by NTP. This implies if NTP synchronization is seriously off, it might impact this clock protocol.
     </p>
 	
 	<p>
@@ -9979,11 +10226,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-      It seems the developers of CockroachDB seem agree with me on this. They deal with it with the following rule: when a node detects that its clock is out of sync with at least half of the other nodes in the cluster by 80% of maximum offset allowed, it crashes immediately. This approach pertains to the primary algorithm all the time, although it might imply the algorithm operates with a larger Epsilon sometimes(it really depends on the relation between Epsilon and the maximum offset). This implies any property that doesn't involve Epsilon, in particular property 1, remains true. So if we were to use HLC for an implementation of Serializable Snapshot Isolation or Spanner's consistent snapshot, they will both remain correct with unstable situations like drift-away servers since it is equivalent to a clock protocol that operates with a larger Epsilon. And the issue described in the last paragraph will also go away if we choose the variable for c carefully based on the maximum offset instead.
-    </p>
-	
-	<p>
-      There are two consequences with CockroachDB's approach. One is that anomalies like violation of external consistency will show up more often when the clock protocol operates with a larger Epsilon. The other is that if HLC co-locates with data, the brought-down of the server could render those data unavailable(unless there is a replication of that data like in NDB Cluster). This could further compromise the semantics of the deployed application(For example, if the average of a field is computed system-wide in the application, it might render it biased if part of the data is not available). Notice that Google's Spanner is free from this issue since they use dedicated servers for their TrueTime service.
+      It seems the developers of CockroachDB seem agree with me on this. They deal with it with the following rule: when a node detects that its clock is out of sync with at least half of the other nodes in the cluster by 80% of maximum offset(defaults to 500 ms) allowed, it crashes immediately. This approach pertains to the primary algorithm all the time, although it might imply the algorithm operates with a larger Epsilon sometimes(it really depends on the relation between Epsilon and the maximum offset). This implies any property that doesn't involve Epsilon, in particular property 1, remains true. So if we were to use HLC for an implementation of Serializable Snapshot Isolation or Spanner's consistent snapshot, they will both remain correct with unstable situations like drift-away servers since it is equivalent to a clock protocol that operates with a larger Epsilon. And the issue described in the last paragraph will also go away if we choose the variable for c carefully based on the maximum offset instead.
     </p>
 	
 	<p>
@@ -9999,11 +10242,15 @@ highly appreciated.
     </p>
 	
 	<p>
-      <b>RW conflicts</b>: Upon any read operation, the timestamp is recorded in a node-local timestamp cache. This cache will return the most recent timestamp at which the key is read when queried. All write operations query the timestamp cache for the key they are writing. If the returned timestamp is greater than or equal to the timestamp of the write operation, this writing transaction is aborted and will be restarted with a later timestamp. Now suppose t1 >= t2, then when T1 performed its read, T2 hadn't perform its write yet since otherwise T1's read would see a version greater or equal to that established by T2 and contradicts with the fact that the conflict is a RW one. When T2 performed its write after T1's read, the cache would return at least t1. This would cause T2 to abort and be restarted with a timestamp larger than t1. This is a contradiction. Hence if the conflict between T1 and T2 is a RW one, we also have t1 < t2. Notice in a RW conflict, the read doesn't necessarily 'happen before' the write. One can find example like this easily in Snapshot Isolation.
+      <b>RW conflicts</b>: Upon any read operation, the timestamp is recorded in a node-local timestamp cache. This cache will return the most recent timestamp at which the key is read when queried. All write operations query the timestamp cache for the key they are writing. If the returned timestamp is greater than the timestamp of the write operation, this writing transaction is pushed to a higher timestamp. While it is pushed, upon the commit of the writing transaction, the reads are checked to see if they are modified before this new higher timestamp. This is called read refreshing in CockroachDB's nomenclature. It is aborted and will be restarted with a later timestamp if any one of them is. These are documented <a href="https://docs.cockroachlabs.com/docs/v25.3/architecture/transaction-layer#timestamp-cache" target="_blank">here</a> and <a href="https://docs.cockroachlabs.com/docs/v25.3/architecture/transaction-layer#read-refreshing" target="_blank">here</a>. 
     </p>
 	
 	<p>
-      <b>WW conflicts</b>: If a write operation attempts to write to a key, but that key already has a version with a timestamp greater than or equal to that of the operation itself, the transaction of this operation is aborted and will be restarted with a later timestamp. Again if the conflict between T1 and T2 is a WW one, we have t1 < t2.
+	  Now suppose t1 > t2, then when T1 performed its read, T2 hadn't committed its write yet since otherwise T1's read would see a version greater or equal to that established by T2 and contradicts with the fact that the conflict is a RW one. When T2 performed its write after T1's read, the cache would return at least t1. This would cause T2 to be pushed, or to abort and be restarted with a timestamp larger than t1. This is a contradiction with t1 > t2. Hence if the conflict between T1 and T2 is a RW one, we must have t1 <= t2. But t1 = t 2 is also NOT possible since CockroachDB will abort T2 to avoid a kind of serializability violation. This is explained in Jepsen's <a href="https://jepsen.io/analyses/cockroachdb-beta-20160829" target="_blank">report</a>(see the section 'Monotonic test'). So we always have t1 < t2 for the RW conflict case. Notice in a RW conflict, the read doesn't necessarily 'happen before' the write. One can find example like this easily in Snapshot Isolation.
+	</p>
+	
+	<p>
+      <b>WW conflicts</b>: If a write operation attempts to write to a key, but that key already has a version with a timestamp greater than that of the operation itself, the transaction of this operation is aborted and will be restarted with a later timestamp. So we have t1 <= t2. And t1 = t2 is impossible for the same reason as explained in Jepsen's report as in last paragraph. Again if the conflict between T1 and T2 is a WW one, we have t1 < t2.
     </p>
 	
 	<p>
@@ -10015,11 +10262,69 @@ highly appreciated.
     </p>
 	
 	<p>
-      There is another issue with this serializability implementation, related to the rule about RW conflicts. It could actually result in a starvation situation for a write operation if too many reads are intended for the same data item. Consider the following situation: a Read-Write transaction is computationally intensive(hence long running) and the result is updated to a field(say, we are computing the Nasdaq index and we need to query a lot of fields and do some serious computation on them), and a lot of short-lived Read-Only transactions constantly floods in to read this field since it is critical for business. This way, chances are that when the Read-Write transaction finishes, the cache already records a lot of reads of that field with timestamps larger than that of the Read-Write transaction's and it has to be rolled back and restarted. The semantics of this application is certainly for this field to be updated as soon as it is available and this starvation situation does exactly the opposite of that. Notice this starvation situation is worse than the case where a write lock waits for a bunch of read locks since in the later case the write will eventually be served. This is not a surprise since the rule for RW conflicts basically says that a read with a later timestamp has higher priority than a write on the same item with an earlier timestamp. Usually we want an update be reflected in the database ASAP. CockroachDB sacrifices this for serializability, but it turns out there is a price.
+	  The first time I encountered a timestamp-based serializability implementation was in <a href="#si02" >[Si 02]</a>(in Section 7.9.4.3) when I explored technical paths of achieving serializability more than a decade ago. Comparing with that, there are two advancements in CockroachDB's implementation. The first one, of course, is the adoption of distributed timestamp service HLC so that serializability can be discussed in a distributed database system. The second one is the use of a multi-version system so that transaction with an earlier timestamp than that of the field it's trying to read doesn't have to be aborted. 
+	</p>
+	
+	<p>
+      There is a starvation situation with the serializability implementation in <a href="#si02" >[Si 02]</a>, related to the rule about RW conflicts. It could arise for a write operation if too many reads are contending for the same data item. Imagine the read refreshing mechanism in CockroachDB is off and consider the following situation: a Read-Write transaction is computationally intensive(hence long running) and the result is updated to a field(say, we are computing the Nasdaq index and we need to query a lot of fields and do some serious computation on them), and a lot of short-lived Read-Only transactions constantly floods in to read this field since it is critical for business. This way, chances are that when the Read-Write transaction finishes, the cache already records a lot of reads of that field with timestamps larger than that of the Read-Write transaction's and it has to be rolled back and restarted. The semantics of this application is certainly for this field to be updated as soon as it is available and this starvation situation does exactly the opposite of that. Notice this starvation situation is worse than the case where a write lock waits for a bunch of read locks since in the later case the write will eventually be served. This is not a surprise since the rule for RW conflicts basically says that a read with a later timestamp has higher priority than a write on the same item with an earlier one. Usually we want an update be reflected in the database ASAP. With CockroachDB's read refreshing mechanism, the long-running Read-Write transaction's timestamp in this starvation example will be pushed to one higher than that returned by the timestamp cache and commits since in that process the reads flooding in will be stalled. 
     </p>
 	
 	<p>
-	  Remark: The first time I encountered a timestamp-based serializability implementation was in <a href="#si02" >[Si 02]</a> when I explored technical paths of achieving serializability more than a decade ago. Comparing with that, there are two advancements in CockroachDB's implementation. The first one, of course, is the adoption of distributed timestamp service HLC so that serializability can be discussed in a distributed database system. The second one is the use of a multi-version system so that transaction with an earlier timestamp than that of the field it's trying to read doesn't have to be aborted. The starvation issue was also present in <a href="#si02" >[Si 02]</a>'s implementation. I couldn't resolve it and that was one major reason I turned to 'optimistic technology' and 'pessimistic technology' for a solution. Today I still can not. I am open to any suggestion to resolve it to make this implementation more sensible.
+	  CockroachDB supports two types of table: regional table and global table. For a regional table, all reads are routed the Leader of a Raft group. On the other hand, reads in a global table can be sent to any voting replica of a Raft group; in that case, CockroachDB provides linearizability so that all  copies of data behave like a single one and the details of this linearizability implementation is discussed in subsection <a href="#section3.8">3.8</a>.
+    </p>
+	
+	<p>
+	  Durability of consistency is guaranteed by Theorem <a href="#theorem6" >6</a> since durability is provided by Raft.
+	</p>
+	
+	<p>
+	  Unfortunately, we can't mount a serializability implementation at 2nd-tier to the Read-Committed isolation level of CockroachDB because a tiny piece of the puzzle is missing. In the successful mounting of a serializability implementation to a NDB Cluster, the key part is the proof of Theorem <a href="#theorem1" >1</a> & <a href="#theorem2" >2</a>. If we choose the commit event to be one that is after execution of all SQL statements, but before 2PC, we can see that the proof of Theorem <a href="#theorem1" >1</a> and the 'If' part of Theorem <a href="#theorem2" >2</a> can go through in this Read-Committed isolation level of CockroachDB, but not the 'Only If' part. The 'Only If' part depends on Example <a href="#example14" >14</a> and in the code snippet similar to the following one there, the locking read in T1 blocks for T2's insert in NDB Cluster for the arguments to be correct.
+	</p>
+	
+	<pre><b>
+                              T1                                                      T2
+
+                                                                                start transaction;
+
+                                                                                insert into t values (2,2,2,2);
+
+      start transaction;
+
+      select * from t where id1>0 and id1<4 for update;                                                                           
+	</b></pre>
+	
+	<p>
+	  But in the Read-Committed isolation level of CockroachDB, T1 doesn't block for T2 and the arguments in the 'Only If' part of Theorem <a href="#theorem2" >2</a> can't go through. Let's see a possible scenario in it that this behavior would render the 'Only If' part to be incorrect. Suppose T1 and T2 are defined as follows:
+	</p>
+	
+	<pre><b>
+                  T1
+
+      start transaction;
+
+      acquire l1;
+    
+      select * from t where id1>0 and id1<4 for update;
+
+      commit;
+    
+                  T2                                 
+
+      start transaction;
+
+      insert into t values (2,2,2,2);
+
+      acquire l2;
+                                                             
+      commit;                                                                            
+	</b></pre>
+	
+	<p>
+	  Here l1 and l2 are conflicting locks as in Theorem <a href="#theorem2" >2</a>.
+	</p>
+	
+	<p>
+	  Consider the situation when T2 is committing and 2PC starts to release locks acquired. In this releasing process, there is a chance that l2 has already been released, but the write lock for the insert hasn't. If this status lasts long enough, T1 may acquire l1 and start the execution of the locking read. Since the insert doesn't block this locking read, it will read the the database state before the insertion. So we have a predicate RW conflict between T1 and T2 and yet l2 → l1. This refutes the 'Only If' part of Theorem <a href="#theorem2" >2</a>.
 	</p>
 	
   </div>
@@ -10057,7 +10362,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  TiDB also provides high availability with a variant of Paxos system called Raft, just like OceanBase does. The timestamp service, for example, is located in the leader of a Raft group formed by PD servers. This timestamp service is used to provide two timestamps for each transaction to signify the start and commit of it so that Snapshot Isolation can be implemented. This timestamp service is the most interesting part of this Snapshot Isolation implementation. Let's see how it overcomes OceanBase's issue of NOT being able to provide sufficient number of timestamps to the whole cluster with an increasing sequence.
+	  TiDB provides high availability with a variant of Paxos system called Raft. The timestamp service, for example, is located in the leader of a Raft group formed by PD servers. This timestamp service is used to provide two timestamps for each transaction to signify the start and commit of it so that Snapshot Isolation can be implemented. This timestamp service is the most interesting part of this Snapshot Isolation implementation. Let's see how it overcomes OceanBase's issue of NOT being able to provide sufficient number of timestamps to the whole cluster with an increasing sequence.
 	</p>
 	
 	<p>
@@ -10147,7 +10452,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  The first one is that we used the Clock Condition to conclude that T's start timestamp < T's commit timestamp for every transaction Tin the proof. And this can be seen from TiDB's optimistic transaction model <a href="https://docs.pingcap.com/tidb/stable/optimistic-transaction/" target="_blank">here</a>: both timestamps are requested by the TiDB server that is coordinating the transaction and the commit timestamp is requested after the start timestamp's arrival; hence the returned start timestamp will be smaller than the commit one since TSO returns timestamps in an increasing order.
+	  The first one is that we used the Clock Condition to conclude that T's start timestamp < T's commit timestamp for every transaction T in the proof. And this can be seen from TiDB's optimistic transaction model <a href="https://docs.pingcap.com/tidb/stable/optimistic-transaction/" target="_blank">here</a>: both timestamps are requested by the TiDB server that is coordinating the transaction and the commit timestamp is requested after the start timestamp's arrival; hence the returned start timestamp will be smaller than the commit one since TSO returns timestamps in an increasing order.
 	</p>
 	
 	<p>
@@ -10159,7 +10464,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  In the TiDB case, the inequality timestamp of T1's commit < timestamp of T2's start can be shown by the logic of write conflict resolution <a href="https://docs.pingcap.com/tidb/stable/troubleshoot-write-conflicts/" target="_blank">here</a>: when transaction T2 tries to commit, it checks whether the condition data.commit_ts > T2.start_ts is true; if it is affirmative, some other transaction commits a version with a larger timestamp and T2 is rolled back; either T2 is rolled back or not, we have data.commit_ts < T2.start_ts because TSO returns timestamps in an increasing order; but of course, data.commit_ts belongs to transaction T1.
+	  In the TiDB case, the inequality timestamp of T1's commit < timestamp of T2's start can be shown by the logic of write conflict resolution <a href="https://docs.pingcap.com/tidb/stable/troubleshoot-write-conflicts/" target="_blank">here</a>: when transaction T2 tries to commit, it checks whether the condition data.commit_ts > T2.start_ts is true; if it is affirmative, some other transaction commits a version with a larger timestamp and T2 is rolled back; if T2 is able to commit, we have data.commit_ts < T2.start_ts because TSO returns timestamps in an increasing order; but of course, data.commit_ts belongs to transaction T1.
 	</p>
 	
 	<p>
@@ -10191,7 +10496,7 @@ highly appreciated.
 	</p>
 	
 	<p>
-	  A transaction under TiDB's Snapshot Isolation reads the most recently committed tuple version is guaranteed by the following arguments: a transaction T1 reading at timestamp s1 and a transaction T2 that committed at timestamp s2 < s1; we will show that T1 sees T2’s writes. Since s2 < s1, we know that the TSO gave out s2 before or in the same batch as s1; hence, T2 requested s2 before T1 received s1. We know that T1 can’t do reads before receiving its start timestamp s1 and that T2 wrote locks before requesting its commit timestamp s2 . Therefore, the above property guarantees that T2 must have at least written all its locks before T1 did any reads; T1’s Get() will see either the fully committed write record or the lock, in which case T1 will block until the lock is released. Either way, T2’s write is visible to T1’s Get(). These arguments can be found <a href="https://tikv.org/deep-dive/distributed-transaction/timestamp-oracle/" target="_blank">here</a>. Notice TiDB provides this guarantee with the following key properties of the system: monotonicity of timestamp service, replication of locks for optimistic transaction by the Raft system, reads waiting for locks to be released.
+	  A transaction under TiDB's Snapshot Isolation reads the most recently committed tuple version is guaranteed by the following arguments: a transaction T1 reading at timestamp s1 and a transaction T2 that committed at timestamp s2 < s1; we will show that T1 sees T2’s writes. Since s2 < s1, we know that the TSO gave out s2 before or in the same batch as s1; hence, T2 requested s2 before T1 received s1. We know that T1 can’t do reads before receiving its start timestamp s1 and that T2 wrote locks before requesting its commit timestamp s2 . Therefore, the above property guarantees that T2 must have at least written all its locks before T1 did any reads; T1’s Get() will see either the fully committed write record or the lock, in which case T1 will block until the lock is released. Either way, T2’s write is visible to T1’s Get(). These arguments can be found <a href="https://tikv.org/deep-dive/distributed-transaction/timestamp-oracle/" target="_blank">here</a>. Notice TiDB provides this guarantee with the following key properties of the system: monotonicity of TSO, replication of locks for optimistic transaction by the Raft system, reads waiting for locks to be released.
 	</p>
 	
 	<p>
@@ -10246,6 +10551,10 @@ highly appreciated.
 	
 	<p>
 	  Consider the situation when T2 is committing and 2PC starts to release locks acquired. In this releasing process, there is a chance that l2 has already been released, but the write lock for the insert hasn't. If this status lasts long enough, T1 may acquire l1 and start the execution of the locking read. Since the insert doesn't block this locking read, it will read the the database state before the insertion. So we have a predicate RW conflict between T1 and T2 and yet l2 → l1. This refutes the 'Only If' part of Theorem <a href="#theorem2" >2</a>.
+	</p>
+	
+	<p>
+	  TiDB also provides linearizability and external consistency for database application developers and they are discussed in subsection <a href="#section3.8">3.8</a>.
 	</p>
 	
 	<p>
